@@ -234,4 +234,5 @@ void main()
 	printf("*高位先发，补0，长除 CRC = 0x%04x\n", crc16_ccitt_changchu(ptr, d_len+2, 1));
 	printf("*低位先发，补0，长除 CRC = 0x%04x\n", crc16_ccitt_changchu(ptr, d_len+2, 0));
 	printf("\n");
+	printf("test git");
 }
