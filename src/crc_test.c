@@ -11,13 +11,34 @@
 
 #define f32 float
 
-void printfbinary(u32 s, u32 len)
+void printfbinary(u32 s, u32 len, u32 indent)
 {
+	for (int k=0;k<indent;k++)
+		printf(" ");
 	for (int m = (len-1); m >= 0; m--)
 		if ((((s) & (0x01 << m)) >> m) == 0x0001)
 			printf("1");
 		else
 			printf("0");
+}
+void printf_(u32 len, u32 indent)
+{
+	for (int k=0;k<indent;k++)
+		printf(" ");
+	for (int m = (len-1); m >= 0; m--)
+		printf("-");
+}
+u32 mod2mult(u32 a,u32 b)
+{
+	u32 result = 0;
+	for(int i = 0;i < 32 ;i++)
+	{
+		if ((a & (0x00000001 << i)) == (0x00000001 << i))
+		{
+			result = result ^ (b << i);
+		}
+	}
+	return result;
 }
 u32 reverseBits_32(u32 n)
 {
@@ -52,11 +73,11 @@ u16 crc16_ccitt_direct(u8 *data, u8 length, u32 init_value)
 	printf("\n");
 
     // 处理所有字节
-	for (j = 0; j<length; ++j, ++data)
+	for (j = 0; j<length; j++, data++)
 	{
         crc_byte = *data;
         // 处理每个bit
-		for (i = 0; i<8; ++i)
+		for (i = 0; i<8; i++)
 		{
             // crc_reg 移出的最高位
 			crc_bit16 = (crc_reg & (0x0001 << (crc_num -1 ))) >> (crc_num -1 );
@@ -88,34 +109,58 @@ u16 crc16_ccitt_nondirect (u8 *data, u8 length, u32 init_value)
 	
 	u16 i, j;
 	u32 crc_reg = init_value;
+	// u32 crc_reg_r1;
 	u16 crc_gx = 0x1021;
 	u16 crc_num = 16;
 	u8 crc_byte;
+	u32 quotient = 0;
 
 	u8 *ptr = data;
 	printf("长除 数据长度:%d 初值:0x%04x\n",length-2,init_value);
 	for (i=0;i<(length-2);i++)
 		printf("0x%02x ", *ptr++);
 	printf("| 0x00 0x00\n");
+	
+	// printfbinary(init_value, 16, 0);
+	// ptr = data;
+	// for (i=0;i<(length);i++)
+	// 	printfbinary(*ptr++, 8, 0);
+	// printf("\n");
 
     // 处理所有字节
-	for (j = 0; j<length; ++j, ++data)
+	for (j = 0; j<length; j++, data++)
 	{
+
 		crc_byte = *data;
 		// 处理每个bit
-		for (i = 0; i<8; ++i)
+		for (i = 0; i<8; i++)
 		{
+			quotient = quotient << 1;
+			// crc_reg_r1 = crc_reg;
             // 左移一位，下一位bit移入crc_reg
             crc_reg = (crc_reg << 1) | ((crc_byte & (0x01 << (7-i))) >> (7-i));
 			if ((crc_reg & (0x00000001 << crc_num)) == (0x00000001 << crc_num))
 			{
+				quotient = quotient | 0x00000001;
                 // crc_reg 移出的是1
 				// crc_reg 减去（异或）生成多项式gx
+				// printfbinary(crc_reg_r1, 16, (j)*8+i+1-1);
+				// printf(" 0x%04x\n",crc_reg_r1 & 0x0000ffff);
+				// printfbinary(crc_gx, 16, (j)*8+i+1);
+				// printf(" 0x%04x\n",crc_gx & 0x0000ffff);
                 crc_reg = crc_reg ^ crc_gx;
+                // printf_(16, (j)*8+i+1);printf("\n");
+                // printfbinary(crc_reg, 16, (j)*8+i+1);
+                // printf(" 0x%04x\n",crc_reg & 0x0000ffff);
+
 			}
 		}
 	}
 	printf("CRC = 0x%04x\n\n",crc_reg & 0x0000ffff);
+	// printf("quotient = 0x%08x\n", quotient);
+
+	// u32 result = mod2mult(quotient,0x00011021);
+	// printf("result: 0x%08x\n",result);
 	return crc_reg & 0x0000ffff; 
 }
 
@@ -125,74 +170,79 @@ int main()
 	u8 *ptr = d;
 	u8 d_len;
 
-	memset(ptr,0,sizeof(u8)*20);
-	strcpy((char *)ptr, "A");
-	d_len = 1;
+	// printf("result: 0x%08x\n",mod2mult(0x00008c1f,0x00011021));	
 
-	printf("M(x): ");
-	for (int i = 0; i < d_len; ++i)
-	{
-		printfbinary(d[i], 8);
-	}
-	printf("\n\n");
+	// memset(ptr,0,sizeof(u8)*20);
+	// strcpy((char *)ptr, "A");
+	// d_len = 1;
 
-	printf("init_value: 0x0000 CRC = 0x%04x 串行      bad crc\n\n", \
-		crc16_ccitt_direct(ptr, d_len, 0x0000));
+	// printf("M(x): ");
+	// for (int i = 0; i < d_len; i++)
+	// {
+	// 	printfbinary(d[i], 8, 0);
+	// }
+	// printf("\n\n");
 
-	printf("init_value: 0x0000 CRC = 0x%04x 长除 补零 good crc\n\n", \
-		crc16_ccitt_nondirect(ptr, d_len+2, 0x0000));
+	// crc16_ccitt_direct(ptr, d_len, 0x0000);
 
-	printf("init_value: 0xffff CRC = 0x%04x 串行      bad crc\n\n", \
-		crc16_ccitt_direct(ptr, d_len, 0xffff));
+	// crc16_ccitt_nondirect(ptr, d_len+2, 0x0000);
 
-	printf("init_value: 0xffff CRC = 0x%04x 长除 补零 good crc\n\n", \
-		crc16_ccitt_nondirect(ptr, d_len+2, 0xffff));
+	// crc16_ccitt_direct(ptr, d_len, 0xffff);
 
-	memset(ptr,0,sizeof(u8)*20);
-	strcpy((char *)ptr, "123456789");
-	d_len = 9;
+	// crc16_ccitt_nondirect(ptr, d_len+2, 0xffff);
 
-	printf("M(x): ");
-	for (int i = 0; i < d_len; ++i)
-	{
-		printfbinary(d[i], 8);
-	}
-	printf("\n\n");
+	// memset(ptr,0,sizeof(u8)*20);
+	// d[0]='A';//d[1]=0xcf;//d[2]=0xde;//d[3]=0x0f;
+	// d_len = 2;
 
-	printf("init_value: 0x0000 CRC = 0x%04x 串行      bad crc\n\n", \
-		crc16_ccitt_direct(ptr, d_len, 0x0000));
+	// printf("M(x): ");
+	// for (int i = 0; i < d_len; i++)
+	// {
+	// 	printfbinary(d[i], 8,0);
+	// }
+	// printf("\n\n");
 
-	printf("init_value: 0x0000 CRC = 0x%04x 长除 补零 good crc\n\n", \
-		crc16_ccitt_nondirect(ptr, d_len+2, 0x0000));
+	// crc16_ccitt_direct(ptr, d_len, 0x0000);
 
-	printf("init_value: 0x1d0f CRC = 0x%04x 串行      bad crc\n\n", \
-		crc16_ccitt_direct(ptr, d_len, 0x1d0f));
+	// crc16_ccitt_nondirect(ptr, d_len+2, 0x0000);
 
-	printf("init_value: 0xffff CRC = 0x%04x 长除 补零 good crc\n\n", \
-		crc16_ccitt_nondirect(ptr, d_len+2, 0xffff));
+	// crc16_ccitt_direct(ptr, d_len, 0xffff);
 
-	printf("init_value: 0xffff CRC = 0x%04x 串行      \n\n", \
-		crc16_ccitt_direct(ptr, d_len, 0xffff));
-
-	printf("init_value: 0x84cf CRC = 0x%04x 长除 补零 \n\n", \
-		crc16_ccitt_nondirect(ptr, d_len+2, 0x84cf));
+	// crc16_ccitt_nondirect(ptr, d_len+2, 0xffff);
 
 	memset(ptr,0,sizeof(u8)*20);
 	strcpy((char *)ptr, "123456789");
 	d_len = 9;
 
 	printf("M(x): ");
-	for (int i = 0; i < d_len; ++i)
+	for (int i = 0; i < d_len; i++)
 	{
-		printfbinary(d[i], 8);
+		printfbinary(d[i], 8, 0);
 	}
 	printf("\n\n");
 
-	printf("init_value: 0x%04x CRC = 0x%04x 长除 补零\n\n", \
-		(~0x3132)&0x0000ffff, crc16_ccitt_nondirect(ptr+2, d_len, (~0x3132)&0x0000ffff));
+	crc16_ccitt_nondirect(ptr, d_len+2, 0x0000);
 
-	printf("init_value: 0x%04x CRC = 0x%04x 串行     \n\n", \
-		0xffff,  crc16_ccitt_direct(ptr, d_len, 0xffff));
+	crc16_ccitt_direct(ptr, d_len, 0x0000);
+
+	crc16_ccitt_nondirect(ptr, d_len+2, 0xffff);
+
+	crc16_ccitt_direct(ptr, d_len, 0xffff);	
+
+	crc16_ccitt_nondirect(ptr, d_len+2, 0x84cf);
+
+
+	// crc16_ccitt_direct(ptr, d_len, 0x1d0f);
+
+	// crc16_ccitt_nondirect(ptr, d_len+2, 0xffff);
+
+	// crc16_ccitt_direct(ptr, d_len, 0xffff);
+
+	
+
+	// crc16_ccitt_nondirect(ptr+2, d_len, 0x84cf);
+
+	// crc16_ccitt_direct(ptr, d_len, 0xffff);
 
 
 
