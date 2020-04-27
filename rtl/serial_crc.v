@@ -4,51 +4,49 @@
 // Function    : CCITT Serial CRC
 // Coder       : Deepak Kumar Tala
 //-----------------------------------------------------
-module serial_crc_ccitt (
-clk     ,
-reset   ,
-enable  ,
-init    , 
-data_in , 
-crc_out
-);
-//-----------Input Ports---------------
-input clk     ;
-input reset   ;
-input enable  ;
-input init    ;
-input data_in ;
-//-----------Output Ports---------------
-output [15:0] crc_out;
+module serial_crc_ccitt #(
+    parameter [15:0] init_value = 16'h0000)
+    (
+    //-----------Input Ports---------------
+    input clk     ,
+    input reset   ,
+    input enable  ,
+    input init    ,
+    input m ,
+    //-----------Output Ports---------------
+    output [15:0] crc_out
+    );
+
 //------------Internal Variables--------
-reg   [15:0] lfsr;
+reg   [15:0] c;
 //-------------Code Start-----------------
-assign crc_out = lfsr;
+assign crc_out = c;
 // Logic to CRC Calculation
-always @ (posedge clk)
-if (reset) begin
-  lfsr <= 16'hFFFF;
-end else if (enable) begin
-  if (init) begin
-    lfsr <=  16'hFFFF;
-  end else begin
-    lfsr[0]  <= data_in ^ lfsr[15];
-    lfsr[1]  <= lfsr[0];
-    lfsr[2]  <= lfsr[1];
-    lfsr[3]  <= lfsr[2];
-    lfsr[4]  <= lfsr[3];
-    lfsr[5]  <= lfsr[4] ^ data_in ^ lfsr[15];
-    lfsr[6]  <= lfsr[5];
-    lfsr[7]  <= lfsr[6];
-    lfsr[8]  <= lfsr[7];
-    lfsr[9]  <= lfsr[8];
-    lfsr[10] <= lfsr[9];
-    lfsr[11] <= lfsr[10];
-    lfsr[12] <= lfsr[11] ^ data_in ^ lfsr[15];
-    lfsr[13] <= lfsr[12];
-    lfsr[14] <= lfsr[13];
-    lfsr[15] <= lfsr[14];
-  end
-end 
+always @ (posedge clk) begin
+    if (reset) begin
+        c <= init_value;
+    end else if (enable) begin
+        if (init) begin
+            c <= init_value;
+        end else begin
+            c[0]  <= c[15] ^ m;
+            c[1]  <= c[0];
+            c[2]  <= c[1];
+            c[3]  <= c[2];
+            c[4]  <= c[3];
+            c[5]  <= c[4] ^ c[15] ^ m;
+            c[6]  <= c[5];
+            c[7]  <= c[6];
+            c[8]  <= c[7];
+            c[9]  <= c[8];
+            c[10] <= c[9];
+            c[11] <= c[10];
+            c[12] <= c[11] ^ c[15] ^ m;
+            c[13] <= c[12];
+            c[14] <= c[13];
+            c[15] <= c[14];
+        end
+    end
+end
 
 endmodule
