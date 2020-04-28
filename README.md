@@ -839,6 +839,15 @@ CRC = 0x31c3
 - 0x84cf的CRC是0xffff
 - 初值为0x84cf的长除法与初值为0xffff的线性移位寄存器的计算结果相同
 
+>In theory (i.e. with no assumptions about the message), the initial value has no affect on the strength of the CRC algorithm, the initial value merely providing a fixed starting point from which the register value can progress. 
+>理论上初值对CRC算法的有效性没有影响，它只影响CRC算法的”盲点“。
+
+所谓盲点，我个人的理解就是，不同的信息码可以计算出相同的CRC。
+
+- 对于初值为0x0000的长除法，它的盲点就是0x0000，在信息码的前面加多少个零都不影响CRC的值。
+- 对于
+
+
 
 ## 参考文献
 
