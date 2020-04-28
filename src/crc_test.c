@@ -116,7 +116,7 @@ u16 crc16_ccitt_nondirect (u8 *data, u8 length, u32 init_value)
 	u32 quotient = 0;
 
 	u8 *ptr = data;
-	printf("长除 数据长度:%d 初值:0x%04x\n",length-2,init_value);
+	printf("长除 数据长度:%d 初值:0x%04x\n信息码: ",length-2,init_value);
 	for (i=0;i<(length-2);i++)
 		printf("0x%02x ", *ptr++);
 	printf("| 0x00 0x00\n");
@@ -166,83 +166,91 @@ u16 crc16_ccitt_nondirect (u8 *data, u8 length, u32 init_value)
 
 int main()
 {
-	u8 d[20];
-	u8 *ptr = d;
-	u8 d_len;
+	u8 m[20];
+	u8 *ptr = m;
+	u8 m_k;
 
 	// printf("result: 0x%08x\n",mod2mult(0x00008c1f,0x00011021));	
 
 	// memset(ptr,0,sizeof(u8)*20);
 	// strcpy((char *)ptr, "A");
-	// d_len = 1;
+	// m_k = 1;
 
 	// printf("M(x): ");
-	// for (int i = 0; i < d_len; i++)
+	// for (int i = 0; i < m_k; i++)
 	// {
-	// 	printfbinary(d[i], 8, 0);
+	// 	printfbinary(m[i], 8, 0);
 	// }
 	// printf("\n\n");
 
-	// crc16_ccitt_direct(ptr, d_len, 0x0000);
+	// crc16_ccitt_direct(ptr, m_k, 0x0000);
 
-	// crc16_ccitt_nondirect(ptr, d_len+2, 0x0000);
+	// crc16_ccitt_nondirect(ptr, m_k+2, 0x0000);
 
-	// crc16_ccitt_direct(ptr, d_len, 0xffff);
+	// crc16_ccitt_direct(ptr, m_k, 0xffff);
 
-	// crc16_ccitt_nondirect(ptr, d_len+2, 0xffff);
+	// crc16_ccitt_nondirect(ptr, m_k+2, 0xffff);
 
 	// memset(ptr,0,sizeof(u8)*20);
 	// d[0]='A';//d[1]=0xcf;//d[2]=0xde;//d[3]=0x0f;
-	// d_len = 2;
+	// m_k = 2;
 
 	// printf("M(x): ");
-	// for (int i = 0; i < d_len; i++)
+	// for (int i = 0; i < m_k; i++)
 	// {
-	// 	printfbinary(d[i], 8,0);
+	// 	printfbinary(m[i], 8,0);
 	// }
 	// printf("\n\n");
 
-	// crc16_ccitt_direct(ptr, d_len, 0x0000);
+	// crc16_ccitt_direct(ptr, m_k, 0x0000);
 
-	// crc16_ccitt_nondirect(ptr, d_len+2, 0x0000);
+	// crc16_ccitt_nondirect(ptr, m_k+2, 0x0000);
 
-	// crc16_ccitt_direct(ptr, d_len, 0xffff);
+	// crc16_ccitt_direct(ptr, m_k, 0xffff);
 
-	// crc16_ccitt_nondirect(ptr, d_len+2, 0xffff);
+	// crc16_ccitt_nondirect(ptr, m_k+2, 0xffff);
 
 	memset(ptr,0,sizeof(u8)*20);
 	strcpy((char *)ptr, "123456789");
-	d_len = 9;
+	m_k = 9;
 
-	printf("M(x): ");
-	for (int i = 0; i < d_len; i++)
-	{
-		printfbinary(d[i], 8, 0);
-	}
-	printf("\n\n");
+	// printf("M(x): ");
+	// for (int i = 0; i < m_k; i++)
+	// {
+	// 	printfbinary(m[i], 8, 0);
+	// }
+	// printf("\n\n");
 
-	crc16_ccitt_nondirect(ptr, d_len+2, 0x0000);
+	// m[0]=0x84;m[1]=0xCF;m_k=11;
+	crc16_ccitt_nondirect(ptr, m_k+2, 0x0000);
 
-	crc16_ccitt_direct(ptr, d_len, 0x0000);
+	crc16_ccitt_nondirect(ptr, m_k+2, 0x84CF);
+	
+	crc16_ccitt_direct(ptr, m_k, 0x0000);
 
-	crc16_ccitt_nondirect(ptr, d_len+2, 0xffff);
-
-	crc16_ccitt_direct(ptr, d_len, 0xffff);	
-
-	crc16_ccitt_nondirect(ptr, d_len+2, 0x84cf);
+	// m[0]=0x84;m[1]=0xCF;m_k=2;
 
 
-	// crc16_ccitt_direct(ptr, d_len, 0x1d0f);
+	crc16_ccitt_direct(ptr, m_k, 0xffff);
 
-	// crc16_ccitt_nondirect(ptr, d_len+2, 0xffff);
+	crc16_ccitt_nondirect(ptr, m_k+2, 0xffff);
 
-	// crc16_ccitt_direct(ptr, d_len, 0xffff);
+	crc16_ccitt_direct(ptr, m_k, 0xffff);	
+
+	crc16_ccitt_nondirect(ptr, m_k+2, 0x84cf);
+
+
+	// crc16_ccitt_direct(ptr, m_k, 0x1d0f);
+
+	// crc16_ccitt_nondirect(ptr, m_k+2, 0xffff);
+
+	// crc16_ccitt_direct(ptr, m_k, 0xffff);
 
 	
 
-	// crc16_ccitt_nondirect(ptr+2, d_len, 0x84cf);
+	// crc16_ccitt_nondirect(ptr+2, m_k, 0x84cf);
 
-	// crc16_ccitt_direct(ptr, d_len, 0xffff);
+	// crc16_ccitt_direct(ptr, m_k, 0xffff);
 
 
 
