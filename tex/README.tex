@@ -91,16 +91,89 @@
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 
-\author{}
-\date{}
+
 \usepackage[UTF8]{ctex}
+\usepackage{listings}
+\usepackage{fontspec} % 定制字体
+% \newfontfamily\menlo{Menlo}
+\usepackage{xcolor} % 定制颜色
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\lstdefinestyle{c-style}
+{
+    language=c,
+    basicstyle=\footnotesize\ttfamily,  % size of fonts used for the code
+    keywordstyle=\color{blue},     % keyword style
+    % identifierstyle=\color{red},
+    commentstyle=\color{mygreen},  % comment style
+    frame=single,
+    backgroundcolor=\color{white},      % choose the background color
+    columns=fullflexible,
+    tabsize=4,
+    breaklines=true,               % automatic line breaking only at whitespace
+    captionpos=b,                  % sets the caption-position to bottom
+    escapeinside={\%*}{*)},        % if you want to add LaTeX within your code
+    stringstyle=\color{mymauve}\ttfamily,  % string literal style
+    rulesepcolor=\color{red!20!green!20!blue!20}
+}
+
+\definecolor{vgreen}{RGB}{104,180,104}
+\definecolor{vblue}{RGB}{49,49,255}
+\definecolor{vorange}{RGB}{255,143,102}
+
+\lstdefinestyle{verilog-style}
+{
+    language=Verilog,
+    basicstyle=\footnotesize\ttfamily,
+    keywordstyle=\color{vblue},
+    identifierstyle=\color{black},
+    commentstyle=\color{vgreen},
+    frame=single,
+    % numbers=left,
+    % numberstyle=\tiny\color{black},
+    % numbersep=10pt,
+    tabsize=4,
+    moredelim=*[s][\colorIndex]{[}{]},
+    literate=*{:}{:}1
+}
+\makeatletter
+\newcommand*\@lbracket{[}
+\newcommand*\@rbracket{]}
+\newcommand*\@colon{:}
+\newcommand*\colorIndex{%
+    \edef\@temp{\the\lst@token}%
+    \ifx\@temp\@lbracket \color{black}%
+    \else\ifx\@temp\@rbracket \color{black}%
+    \else\ifx\@temp\@colon \color{black}%
+    \else \color{vorange}%
+    \fi\fi\fi
+}
+\makeatother
+
+\usepackage{trace}
+\usepackage{url}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=blue,      
+    urlcolor=blue,
+    citecolor=cyan,
+}
+\title{\huge \textbf{CRC校验一探究竟}}
+\author{曹嘉辉}
+\date{2020.4.28}
 \begin{document}
 
-\hypertarget{header-n0}{%
-\section{CRC校验一探究竟}\label{header-n0}}
+\maketitle
+
+% \hypertarget{header-n0}{%
+% \section{CRC校验一探究竟}\label{header-n0}}
 
 \tableofcontents
 
+\newpage
 \hypertarget{header-n3}{%
 \subsection{1. 原理}\label{header-n3}}
 
@@ -282,7 +355,7 @@ A(x)&=[m_{k-1},m_{k-2},\cdots,m_0]G(x)\\
 \begin{aligned}
 A(x)&=M(x)x^{n-k}+R(x)\\
     &=m_{k-1}x^{n-1}+m_{k-2}x^{n-2}+\cdots+m_0x^{n-k}+\\
-    & \hspace{1.5em} r_{n-k-1}x^{n-k-1}+\cdots+r_1x+r_0\\
+    & \: \: \: \: \: \:  r_{n-k-1}x^{n-k-1}+\cdots+r_1x+r_0\\
 \end{aligned}
 \end{equation}
 
@@ -469,6 +542,7 @@ A(x)&=M(x)x^{16}+R(x)\\
 
 可以很容易看到，在信息码前面加零是对最后的余式没有影响的，最后得到的依然是相同的$R(x)$
 
+\newpage
 \hypertarget{header-n109}{%
 \subsection{2. 长除法c语言实现}\label{header-n109}}
 
@@ -492,37 +566,37 @@ A(x)&=M(x)x^{16}+R(x)\\
   此时CRC寄存器中的值就是我们求得的余式，即CRC监督码。
 \end{enumerate}
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{u16 crc16\_ccitt\_nondirect (u8 *data, u8 length, u32 init\_value)}
-\NormalTok{\{}
-\NormalTok{	u16 i, j;}
-\NormalTok{	u32 crc\_reg = init\_value;}
-\NormalTok{	u16 crc\_gx = }\BaseNTok{0x1021}\NormalTok{;}
-\NormalTok{	u16 crc\_num = }\DecValTok{16}\NormalTok{;}
-\NormalTok{	u8 crc\_byte;}
-    \CommentTok{// 处理所有字节 先移入每个字节的最高位}
-	\ControlFlowTok{for}\NormalTok{ (j = }\DecValTok{0}\NormalTok{; j\textless{}length; ++j, ++data)}
-\NormalTok{	\{}
-		\CommentTok{// 处理每个bit}
-		\ControlFlowTok{for}\NormalTok{ (i = }\DecValTok{0}\NormalTok{; i\textless{}}\DecValTok{8}\NormalTok{; ++i)}
-\NormalTok{		\{}
-            \CommentTok{// 左移一位，下一位bit移入crc\_reg}
-\NormalTok{            crc\_reg = (crc\_reg \textless{}\textless{} }\DecValTok{1}\NormalTok{) | ((crc\_byte \& (}\BaseNTok{0x01}\NormalTok{ \textless{}\textless{} (}\DecValTok{7}\NormalTok{{-}i))) \textgreater{}\textgreater{} (}\DecValTok{7}\NormalTok{{-}i));}
-			\ControlFlowTok{if}\NormalTok{ ((crc\_reg \& (}\BaseNTok{0x00000001}\NormalTok{ \textless{}\textless{} crc\_num)) == (}\BaseNTok{0x00000001}\NormalTok{ \textless{}\textless{} crc\_num))}
-\NormalTok{			\{}
-                \CommentTok{// crc\_reg 移出的是1}
-				\CommentTok{// crc\_reg 减去（异或）生成多项式gx}
-\NormalTok{                crc\_reg = crc\_reg \^{} crc\_gx;}
-\NormalTok{			\}}
-\NormalTok{		\}}
-\NormalTok{	\}}
-	\ControlFlowTok{return}\NormalTok{ crc\_reg \& }\BaseNTok{0x0000ffff}\NormalTok{; }
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
+\begin{lstlisting}[style={c-style}]
+u16 crc16_ccitt_nondirect (u8 *data, u8 length, u32 init_value)
+{
+    u16 i, j;
+    u32 crc_reg = init_value;
+    u16 crc_gx = 0x1021;
+    u16 crc_num = 16;
+    u8 crc_byte;
+    // 处理所有字节 先移入每个字节的最高位
+    for (j = 0; j<length; ++j, ++data)
+    {
+        // 处理每个bit
+        for (i = 0; i<8; ++i)
+        {
+            // 左移一位，下一位bit移入crc_reg
+            crc_reg = (crc_reg << 1) | ((crc_byte & (0x01 << (7-i))) >> (7-i));
+            if ((crc_reg & (0x00000001 << crc_num)) == (0x00000001 << crc_num))
+            {
+                // crc_reg 移出的是1
+                // crc_reg 减去（异或）生成多项式gx
+                crc_reg = crc_reg ^ crc_gx;
+            }
+        }
+    }
+    return crc_reg & 0x0000ffff; 
+}
+\end{lstlisting}
 
 \textbf{注意：实际实现的过程中就引出了CRC计算时寄存器的初值问题。当寄存器初值为0时，就相当于在信息码前面加零，对最后运算得出的余式没有影响；当寄存器初值不为0式，就会有不同的结果。}
+
+一个大牛Ross N. Williams是这么说的：
 
 \begin{quote}
 Most CRC algorithms initialize their register to zero. However, some
@@ -547,29 +621,28 @@ the algorithm register to a non-zero value.
 
 函数运算输出：
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\DataTypeTok{int}\NormalTok{ main()}
-\NormalTok{\{}
-\NormalTok{	u8 d[}\DecValTok{10}\NormalTok{];}
-\NormalTok{	u8 *ptr = d;}
-\NormalTok{	u8 d\_len = }\DecValTok{1}\NormalTok{;}
-\NormalTok{	d[}\DecValTok{0}\NormalTok{] = }\CharTok{\textquotesingle{}A\textquotesingle{}}\NormalTok{; }\CommentTok{// 0x41, 0b01000001}
-\NormalTok{	d[}\DecValTok{1}\NormalTok{] = }\BaseNTok{0x00}\NormalTok{;d[}\DecValTok{2}\NormalTok{] = }\BaseNTok{0x00}\NormalTok{; }\CommentTok{// 在信息码后面补零}
-	
-	\CommentTok{// CRC寄存器初值为0x0000}
-\NormalTok{	printf(}\StringTok{"CRC寄存器初值为0x0000, CRC = 0x\%04x}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{,\textbackslash{}}
-\NormalTok{		crc16\_ccitt\_nondirect(ptr, d\_len+}\DecValTok{2}\NormalTok{, }\BaseNTok{0x0000}\NormalTok{));}
-	\CommentTok{// CRC寄存器初值为0x0000, CRC = 0x58e5 }
-	
-	\CommentTok{// CRC寄存器初值为0xffff}
-\NormalTok{	printf(}\StringTok{"CRC寄存器初值为0xffff, CRC = 0x\%04x}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{,\textbackslash{}}
-\NormalTok{		crc16\_ccitt\_nondirect(ptr, d\_len+}\DecValTok{2}\NormalTok{, }\BaseNTok{0xffff}\NormalTok{));}
-    \CommentTok{// CRC寄存器初值为0xffff, CRC = 0x9479}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
+\begin{lstlisting}[style={c-style}]
+int main()
+{
+    u8 d[10];
+    u8 *ptr = d;
+    u8 d_len = 1;
+    d[0] = 'A'; // 0x41, 0b01000001
+    d[1] = 0x00;d[2] = 0x00; // 在信息码后面补零
+    
+    // CRC寄存器初值为0x0000
+    printf("CRC寄存器初值为0x0000, CRC = 0x%04x\n",\
+        crc16_ccitt_nondirect(ptr, d_len+2, 0x0000));
+    // CRC寄存器初值为0x0000, CRC = 0x58e5 
+    
+    // CRC寄存器初值为0xffff
+    printf("CRC寄存器初值为0xffff, CRC = 0x%04x\n",\
+        crc16_ccitt_nondirect(ptr, d_len+2, 0xffff));
+    // CRC寄存器初值为0xffff, CRC = 0x9479
+}
+\end{lstlisting}
 
+\newpage
 \hypertarget{header-n131}{%
 \subsection{3. 线性移位寄存器电路实现}\label{header-n131}}
 
@@ -588,8 +661,8 @@ CRC寄存器为$C(x)$，$C(x)=c_{15}^ix^{15}+c_{14}^ix^{14}+\cdots+c_1^ix+c_0^i$
 
 \begin{equation}
 \begin{aligned}
-c_{15}^ix^{15}+c_{14}^ix^{14}+\cdots+c_1^ix+c_0^i = \\ 
-(m_{k-1}x^{k-1}+m_{k-2}x^{k-2}+\cdots+m_1x+m_0)x^{16} \: mod \: g(x)
+&c_{15}^ix^{15}+c_{14}^ix^{14}+\cdots+c_1^ix+c_0^i \\
+=&(m_{k-1}x^{k-1}+m_{k-2}x^{k-2}+\cdots+m_1x+m_0)x^{16} \: mod \: g(x)
 \end{aligned}
 \end{equation}
 
@@ -597,9 +670,9 @@ c_{15}^ix^{15}+c_{14}^ix^{14}+\cdots+c_1^ix+c_0^i = \\
 
 \begin{equation}
 \begin{aligned}
-c_{15}^{i+1}x^{15}+c_{14}^{i+1}x^{14}+\cdots+c_1^{i+1}x+c_0^{i+1} \\ 
-=[(m_{k-1}x^{k-1}+m_{k-2}x^{k-2}+\cdots+m_1x+m_0)x^{17}+mx^{16}] \: mod \: g(x)\\
-=(m_{k-1}x^{k-1}+m_{k-2}x^{k-2}+\cdots+m_1x+m_0)x^{17} \: mod \: g(x)+mx^{16} \: mod \: g(x)\\
+&c_{15}^{i+1}x^{15}+c_{14}^{i+1}x^{14}+\cdots+c_1^{i+1}x+c_0^{i+1} \\ 
+=&[(m_{k-1}x^{k-1}+m_{k-2}x^{k-2}+\cdots+m_1x+m_0)x^{17}+mx^{16}] \: mod \: g(x)\\
+=&(m_{k-1}x^{k-1}+m_{k-2}x^{k-2}+\cdots+m_1x+m_0)x^{17} \: mod \: g(x)+mx^{16} \: mod \: g(x)\\
 \end{aligned}
 \end{equation}
 
@@ -623,14 +696,16 @@ c_{15}^{i+1}x^{15}+c_{14}^{i+1}x^{14}+\cdots+c_1^{i+1}x+c_0^{i+1} \\
 
 如果$c_{15}^i=0$，余式为$c_{14}^ix^{15}+\cdots+c_1^ix^2+c_0^ix$；
 
-可知$[(c_{15}^ix^{15}+c_{14}^ix^{14}+\cdots+c_1^ix+c_0^i)x] \: mod \: g(x)=\$c_{14}^i+c_{15}^ig_{15})x^{15}+(c_{13}^i+c_{15}^ig_{14})x^{14}+\cdots+(c_0^i+c_{15}^ig_1)x+c_{15}^ig_0$
+可知$[(c_{15}^ix^{15}+c_{14}^ix^{14}+\cdots+c_1^ix+c_0^i)x] \: mod \: g(x)=\$c_{14}^i+c_{15}^ig_{15})x^{15}+(c_{13}^i+c_{15}^ig_{14})x^{14}+\cdots+(c_0^i+c_{15}^ig_1)x+c_{15}^ig_0$。
 
 由以上结果可知：
 
 \begin{equation}
 \begin{aligned}
-=(c_{14}^i+c_{15}^ig_{15})x^{15}+(c_{13}^i+c_{15}^ig_{14})x^{14}+\cdots+(c_0^i+c_{15}^ig_1)x+c_{15}^ig_0\\+mg_{15}x^{15}+mg_{14}x^{14}+\cdots+mg_1x+mg_0\\
-=(c_{14}^{i}+(c_{15}^i+m)g_{15})x^{15}+(c_{13}^{i}+(c_{15}^i+m)g_{14})x^{14}+\cdots\\+(c_{0}^{i}+(c_{15}^i+m)g_{1})x+(c_{15}^i+m)g_0
+&=(c_{14}^i+c_{15}^ig_{15})x^{15}+(c_{13}^i+c_{15}^ig_{14})x^{14}+\cdots+(c_0^i+c_{15}^ig_1)x+c_{15}^ig_0+\\
+& \: \: \: \: \: \:  mg_{15}x^{15}+mg_{14}x^{14}+\cdots+mg_1x+mg_0\\
+&=(c_{14}^{i}+(c_{15}^i+m)g_{15})x^{15}+(c_{13}^{i}+(c_{15}^i+m)g_{14})x^{14}+\cdots+\\
+& \: \: \: \: \: \:  (c_{0}^{i}+(c_{15}^i+m)g_{1})x+(c_{15}^i+m)g_0
 \end{aligned}
 \end{equation}
 
@@ -638,11 +713,11 @@ c_{15}^{i+1}x^{15}+c_{14}^{i+1}x^{14}+\cdots+c_1^{i+1}x+c_0^{i+1} \\
 
 \begin{equation}
 \begin{aligned}
-c_{15}^{i+1}=c_{14}^{i}+(c_{15}^i+m)g_{15}\\
-c_{14}^{i+1}=c_{13}^{i}+(c_{15}^i+m)g_{14}\\
-\vdots\\
-c_{1}^{i+1}=c_{0}^{i}+(c_{15}^i+m)g_{1}\\
-c_{0}^{i+1}=(c_{15}^i+m)g_{0}\\
+c_{15}^{i+1}&=c_{14}^{i}+(c_{15}^i+m)g_{15}\\
+c_{14}^{i+1}&=c_{13}^{i}+(c_{15}^i+m)g_{14}\\
+&\vdots\\
+c_{1}^{i+1}&=c_{0}^{i}+(c_{15}^i+m)g_{1}\\
+c_{0}^{i+1}&=(c_{15}^i+m)g_{0}\\
 \end{aligned}
 \end{equation}
 
@@ -650,9 +725,9 @@ c_{0}^{i+1}=(c_{15}^i+m)g_{0}\\
 
 \begin{equation}
 \begin{aligned}
-g(x)=x^{16}+x^{12}+x^5+1\\
-g_{12}=g_{5}=g_{0}=1\\
-g_{others}=0
+&g(x)=x^{16}+x^{12}+x^5+1\\
+&g_{12}=g_{5}=g_{0}=1\\
+&g_{others}=0
 \end{aligned}
 \end{equation}
 
@@ -660,130 +735,126 @@ g_{others}=0
 
 \begin{equation}
 \begin{aligned}
-c_{15}^{i+1}&=c_{14}^{i}\\
-c_{14}^{i+1}&=c_{13}^{i}\\
-c_{13}^{i+1}&=c_{12}^{i}\\
+% c_{15}^{i+1}&=c_{14}^{i}\\
+% c_{14}^{i+1}&=c_{13}^{i}\\
+% c_{13}^{i+1}&=c_{12}^{i}\\
 c_{12}^{i+1}&=c_{11}^{i}+c_{15}^i+m\\
-c_{11}^{i+1}&=c_{10}^{i}\\
-c_{10}^{i+1}&=c_{ 9}^{i}\\
-c_{ 9}^{i+1}&=c_{ 8}^{i}\\
-c_{ 8}^{i+1}&=c_{ 7}^{i}\\
-c_{ 7}^{i+1}&=c_{ 6}^{i}\\
-c_{ 6}^{i+1}&=c_{ 5}^{i}\\
+% c_{11}^{i+1}&=c_{10}^{i}\\
+% c_{10}^{i+1}&=c_{ 9}^{i}\\
+% c_{ 9}^{i+1}&=c_{ 8}^{i}\\
+% c_{ 8}^{i+1}&=c_{ 7}^{i}\\
+% c_{ 7}^{i+1}&=c_{ 6}^{i}\\
+% c_{ 6}^{i+1}&=c_{ 5}^{i}\\
 c_{ 5}^{i+1}&=c_{ 4}^{i}+c_{15}^i+m\\
-c_{ 4}^{i+1}&=c_{ 3}^{i}\\
-c_{ 3}^{i+1}&=c_{ 2}^{i}\\
-c_{ 2}^{i+1}&=c_{ 1}^{i}\\
-c_{ 1}^{i+1}&=c_{ 0}^{i}\\
+% c_{ 4}^{i+1}&=c_{ 3}^{i}\\
+% c_{ 3}^{i+1}&=c_{ 2}^{i}\\
+% c_{ 2}^{i+1}&=c_{ 1}^{i}\\
+% c_{ 1}^{i+1}&=c_{ 0}^{i}\\
 c_{ 0}^{i+1}&=c_{15}^i+m\\
+c_{ k}^{i+1}&=c_{ k-1}^{i},\; k \neq 12,5,0 \\
 \end{aligned}
 \end{equation}
 
 相应的RTL代码就是：
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{always}\NormalTok{ @ (}\KeywordTok{posedge}\NormalTok{ clk) }\KeywordTok{begin}
-	\KeywordTok{if}\NormalTok{ (reset) }\KeywordTok{begin}
-\NormalTok{		c \textless{}= }\BaseNTok{16\textquotesingle{}h0000}\NormalTok{;}
-	\KeywordTok{end} \KeywordTok{else} \KeywordTok{if}\NormalTok{ (enable) }\KeywordTok{begin}
-		\KeywordTok{if}\NormalTok{ (init) }\KeywordTok{begin}
-\NormalTok{			c \textless{}=  }\BaseNTok{16\textquotesingle{}h0000}\NormalTok{;}
-		\KeywordTok{end} \KeywordTok{else} \KeywordTok{begin}
-\NormalTok{			c[}\DecValTok{0}\NormalTok{]  \textless{}= c[}\DecValTok{15}\NormalTok{] \^{} m;}
-\NormalTok{			c[}\DecValTok{1}\NormalTok{]  \textless{}= c[}\DecValTok{0}\NormalTok{];}
-\NormalTok{			c[}\DecValTok{2}\NormalTok{]  \textless{}= c[}\DecValTok{1}\NormalTok{];}
-\NormalTok{			c[}\DecValTok{3}\NormalTok{]  \textless{}= c[}\DecValTok{2}\NormalTok{];}
-\NormalTok{			c[}\DecValTok{4}\NormalTok{]  \textless{}= c[}\DecValTok{3}\NormalTok{];}
-\NormalTok{			c[}\DecValTok{5}\NormalTok{]  \textless{}= c[}\DecValTok{4}\NormalTok{] \^{} c[}\DecValTok{15}\NormalTok{] \^{} m;}
-\NormalTok{			c[}\DecValTok{6}\NormalTok{]  \textless{}= c[}\DecValTok{5}\NormalTok{];}
-\NormalTok{			c[}\DecValTok{7}\NormalTok{]  \textless{}= c[}\DecValTok{6}\NormalTok{];}
-\NormalTok{			c[}\DecValTok{8}\NormalTok{]  \textless{}= c[}\DecValTok{7}\NormalTok{];}
-\NormalTok{			c[}\DecValTok{9}\NormalTok{]  \textless{}= c[}\DecValTok{8}\NormalTok{];}
-\NormalTok{			c[}\DecValTok{10}\NormalTok{] \textless{}= c[}\DecValTok{9}\NormalTok{];}
-\NormalTok{			c[}\DecValTok{11}\NormalTok{] \textless{}= c[}\DecValTok{10}\NormalTok{];}
-\NormalTok{			c[}\DecValTok{12}\NormalTok{] \textless{}= c[}\DecValTok{11}\NormalTok{] \^{} c[}\DecValTok{15}\NormalTok{] \^{} m;}
-\NormalTok{			c[}\DecValTok{13}\NormalTok{] \textless{}= c[}\DecValTok{12}\NormalTok{];}
-\NormalTok{			c[}\DecValTok{14}\NormalTok{] \textless{}= c[}\DecValTok{13}\NormalTok{];}
-\NormalTok{			c[}\DecValTok{15}\NormalTok{] \textless{}= c[}\DecValTok{14}\NormalTok{];}
-		\KeywordTok{end}
-	\KeywordTok{end}
-\KeywordTok{end}
-\end{Highlighting}
-\end{Shaded}
+
+\begin{lstlisting}[style={verilog-style}]
+always @ (posedge clk) begin
+    if (reset) begin
+        c <= 16'h0000;
+    end else if (enable) begin
+        if (init) begin
+            c <=  16'h0000;
+        end else begin
+            c[0]  <= c[15] ^ m;
+            c[1]  <= c[0];
+            c[2]  <= c[1];
+            c[3]  <= c[2];
+            c[4]  <= c[3];
+            c[5]  <= c[4] ^ c[15] ^ m;
+            c[6]  <= c[5];
+            c[7]  <= c[6];
+            c[8]  <= c[7];
+            c[9]  <= c[8];
+            c[10] <= c[9];
+            c[11] <= c[10];
+            c[12] <= c[11] ^ c[15] ^ m;
+            c[13] <= c[12];
+            c[14] <= c[13];
+            c[15] <= c[14];
+        end
+    end
+end
+\end{lstlisting}
 
 \hypertarget{header-n163}{%
 \subsubsection{3.2 线性移位寄存器的c语言仿真}\label{header-n163}}
 
-首先使用c语言再模拟一下这个过程，因为我们推导的时候已经考虑到了在信息码后面补零，现在使用线性移位寄存器的时候就不用在信息码后面再补零了。
+用c语言再模拟一下这个过程，因为我们推导的时候已经考虑到了在信息码后面补零，现在使用线性移位寄存器的时候就不用在信息码后面再补零了。
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{u16 crc16\_ccitt\_direct(u8 *data, u8 length, u32 init\_value)}
-\NormalTok{\{}
-\NormalTok{	u16 i, j;}
-\NormalTok{	u32 crc\_reg = init\_value;}
-\NormalTok{	u16 crc\_gx = }\BaseNTok{0x1021}\NormalTok{;}
-\NormalTok{	u16 crc\_num = }\DecValTok{16}\NormalTok{;}
-\NormalTok{	u32 crc\_bit16, crc\_in;}
-\NormalTok{	u8 crc\_byte;}
-    \CommentTok{// 处理所有字节}
-	\ControlFlowTok{for}\NormalTok{ (j = }\DecValTok{0}\NormalTok{; j\textless{}length; ++j, ++data)}
-\NormalTok{	\{}
-        \CommentTok{// 处理每个bit}
-		\ControlFlowTok{for}\NormalTok{ (i = }\DecValTok{0}\NormalTok{; i\textless{}}\DecValTok{8}\NormalTok{; ++i)}
-\NormalTok{		\{}
-            \CommentTok{// crc\_reg 移出的最高位}
-\NormalTok{			crc\_bit16 = (crc\_reg \& (}\BaseNTok{0x0001}\NormalTok{ \textless{}\textless{} (crc\_num {-}}\DecValTok{1}\NormalTok{ ))) \textgreater{}\textgreater{} (crc\_num {-}}\DecValTok{1}\NormalTok{ );}
-			\CommentTok{// 下一位移入的bit}
-\NormalTok{            crc\_in = ((crc\_byte \& (}\BaseNTok{0x01}\NormalTok{ \textless{}\textless{} (}\DecValTok{7}\NormalTok{{-}i))) \textgreater{}\textgreater{} (}\DecValTok{7}\NormalTok{{-}i));}
+\begin{lstlisting}[style={c-style}]
+u16 crc16_ccitt_direct(u8 *data, u8 length, u32 init_value)
+{
+    u16 i, j;
+    u32 crc_reg = init_value;
+    u16 crc_gx = 0x1021;
+    u16 crc_num = 16;
+    u32 crc_bit16, crc_in;
+    u8 crc_byte;
+    // 处理所有字节
+    for (j = 0; j<length; ++j, ++data)
+    {
+        // 处理每个bit
+        for (i = 0; i<8; ++i)
+        {
+            // crc_reg 移出的最高位
+            crc_bit16 = (crc_reg & (0x0001 << (crc_num -1 ))) >> (crc_num -1 );
+            // 下一位移入的bit
+            crc_in = ((crc_byte & (0x01 << (7-i))) >> (7-i));
 
-			\ControlFlowTok{switch}\NormalTok{(crc\_bit16 + crc\_in)}
-\NormalTok{			\{}
-				\ControlFlowTok{case} \BaseNTok{0x00000000}\NormalTok{:}
-				\ControlFlowTok{case} \BaseNTok{0x00000002}\NormalTok{:}
-                    \CommentTok{// 异或为0，只进行左移}
-\NormalTok{					crc\_reg = (crc\_reg \textless{}\textless{} }\DecValTok{1}\NormalTok{) ;}
-					\ControlFlowTok{break}\NormalTok{;}
-				\ControlFlowTok{case} \BaseNTok{0x00000001}\NormalTok{:}
-                    \CommentTok{// 异或为1，左移后再与g(x)异或}
-\NormalTok{					crc\_reg = (crc\_reg \textless{}\textless{} }\DecValTok{1}\NormalTok{);}
-\NormalTok{					crc\_reg = crc\_reg \^{} crc\_gx;}
-					\ControlFlowTok{break}\NormalTok{;}
-				\ControlFlowTok{default}\NormalTok{:}
-					\ControlFlowTok{break}\NormalTok{;}
-\NormalTok{			\}}
-\NormalTok{		\}}
-\NormalTok{	\}}
-	\ControlFlowTok{return}\NormalTok{ crc\_reg \& }\BaseNTok{0x0000ffff}\NormalTok{;}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
+            switch(crc_bit16 + crc_in)
+            {
+                case 0x00000000:
+                case 0x00000002:
+                    // 异或为0，只进行左移
+                    crc_reg = (crc_reg << 1) ;
+                    break;
+                case 0x00000001:
+                    // 异或为1，左移后再与g(x)异或
+                    crc_reg = (crc_reg << 1);
+                    crc_reg = crc_reg ^ crc_gx;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    return crc_reg & 0x0000ffff;
+}
+\end{lstlisting}
 
 函数运算输出：
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\DataTypeTok{int}\NormalTok{ main()}
-\NormalTok{\{}
-\NormalTok{	u8 d[}\DecValTok{10}\NormalTok{];}
-\NormalTok{	u8 *ptr = d;}
-\NormalTok{	u8 d\_len = }\DecValTok{1}\NormalTok{;}
-\NormalTok{	d[}\DecValTok{0}\NormalTok{] = }\CharTok{\textquotesingle{}A\textquotesingle{}}\NormalTok{; }\CommentTok{// 0x41, 0b01000001}
-\NormalTok{	d[}\DecValTok{1}\NormalTok{] = }\BaseNTok{0x00}\NormalTok{;d[}\DecValTok{2}\NormalTok{] = }\BaseNTok{0x00}\NormalTok{; }\CommentTok{// 在信息码后面补零}
-	
-	\CommentTok{// CRC寄存器初值为0x0000}
-\NormalTok{	printf(}\StringTok{"CRC寄存器初值为0x0000, CRC = 0x\%04x}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{,\textbackslash{}}
-\NormalTok{		crc16\_ccitt\_direct(ptr, d\_len, }\BaseNTok{0x0000}\NormalTok{));}
-	\CommentTok{// CRC寄存器初值为0x0000, CRC = 0x58e5 }
-	
-	\CommentTok{// CRC寄存器初值为0xffff}
-\NormalTok{	printf(}\StringTok{"CRC寄存器初值为0xffff, CRC = 0x\%04x}\SpecialCharTok{\textbackslash{}n}\StringTok{"}\NormalTok{,\textbackslash{}}
-\NormalTok{		crc16\_ccitt\_direct(ptr, d\_len, }\BaseNTok{0xffff}\NormalTok{));}
-    \CommentTok{// CRC寄存器初值为0xffff, CRC = 0xb915}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
+\begin{lstlisting}[style={c-style}]
+int main()
+{
+    u8 d[10];
+    u8 *ptr = d;
+    u8 d_len = 1;
+    d[0] = 'A'; // 0x41, 0b01000001
+    d[1] = 0x00;d[2] = 0x00; // 在信息码后面补零
+    
+    // CRC寄存器初值为0x0000
+    printf("CRC寄存器初值为0x0000, CRC = 0x%04x\n",\
+        crc16_ccitt_direct(ptr, d_len, 0x0000));
+    // CRC寄存器初值为0x0000, CRC = 0x58e5 
+    
+    // CRC寄存器初值为0xffff
+    printf("CRC寄存器初值为0xffff, CRC = 0x%04x\n",\
+        crc16_ccitt_direct(ptr, d_len, 0xffff));
+    // CRC寄存器初值为0xffff, CRC = 0xb915
+}
+\end{lstlisting}
 
 \hypertarget{header-n168}{%
 \subsubsection{3.3 线性移位寄存器的verilog仿真}\label{header-n168}}
@@ -808,6 +879,7 @@ crc_ffff = b915
 
 可以看到跟上面c语言仿真的结果是相同的。
 
+\newpage
 \hypertarget{header-n172}{%
 \subsection{4. 初值问题}\label{header-n172}}
 
@@ -844,10 +916,11 @@ CRC(x)=M(x)x^{n-k} \: mod \: g(x)
 
 \begin{equation}
 \begin{aligned}
-init \: value = xxxx\\
-相当于\\
-init \: value = 0000 \: 并且\: M_{new} = (xxxx,m_{k-1},m_{k-2},\cdots,m_0)\\
-CRC(x)=M_{new}(x)x^{n-k} \: mod \: g(x)
+init\_value &= (i_{15},\cdots,i_0) \:M(x)\\
+CRC_1(x)&=M(x)x^{n-k} \: mod \: g(x)\\
+init\_value &= (0_{15},\cdots,0_0) \: \&\& \: M_{new} = (i_{15},\cdots,i_0,m_{k-1},m_{k-2},\cdots,m_0)\\
+CRC_2(x)&=M_{new}(x)x^{n-k} \: mod \: g(x)\\
+CRC_1(x) &\equiv CRC_2(x)
 \end{aligned}
 \end{equation}
 
@@ -880,9 +953,8 @@ M(x)x^{n-k}=Q(x)g(x)+CRC(x)\\
 
 \begin{equation}
 \begin{aligned}
-(0_{15},0_{14},\cdots,0_1,0_0)\\
-\equiv [Q(x)g(x)] lSB16bit +CRC(x)\\
- [Q(x)g(x)] LSB16bit \equiv (0_{15},0_{14},\cdots,0_1,0_0)+CRC(x)\\
+(0_{15},\cdots,0_0) &\equiv [Q(x)g(x)] lSB16bit +CRC(x)\\
+ [Q(x)g(x)] LSB16bit &\equiv ((0_{15},\cdots,0_0)+CRC(x)\\
 \end{aligned}
 \end{equation}
 
@@ -890,8 +962,8 @@ M(x)x^{n-k}=Q(x)g(x)+CRC(x)\\
 
 \begin{equation}
 \begin{aligned}
-g(x)=x^{16}+x^{12}+x^5+1\\
-n-k=16
+g(x)&=x^{16}+x^{12}+x^5+1\\
+n-k&=16
 \end{aligned}
 \end{equation}
 
@@ -913,7 +985,7 @@ Q(x)g(x)&=(q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0)(x^{16}+x^{12}+x^5+1)\\
 & \: \: \: \: \: \:(q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0)x^5 +\\
 & \: \: \: \: \: \:(q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0)\\
 &=q_3x^{15}+q_2x^{14}+q_1x^{13}+q_2x^{12}+\\
-& \: \: \: \: \: \: q_{10}x^{15}+q_9x^{14}+q_8x^{13}+q_7x^{12}+q_6x^{11}+q_5x^{10}+q_4x^{9}+q_3x^{8}+q_2x^{7}+q_1x^{6}+q_0x^{5}+\\
+& \: \: \: \: \: \: q_{10}x^{15}+q_9x^{14}+\cdots+q_1x^{6}+q_0x^{5}+\\
 & \: \: \: \: \: \: q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0
 \end{aligned}
 \end{equation}
@@ -921,7 +993,7 @@ Q(x)g(x)&=(q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0)(x^{16}+x^{12}+x^5+1)\\
 我们的条件是：
 
 \begin{equation}
-[Q(x)g(x)]低16位 \equiv (0_{15},0_{14},\cdots,0_1,0_0)+CRC(x)=0xffff
+(Q(x)g(x))_{LSB16bit} \equiv (0_{15},\cdots,0_0)+CRC(x)=0xffff
 \end{equation}
 
 则所对应的方程为：
@@ -962,6 +1034,8 @@ M(x)x^{n-k}=Q(x)g(x)+CRC(x)
 
 用c代码仿真一下。
 
+\paragraph{4.3.1 长除法的性质}
+
 \begin{verbatim}
 //信息码字节数m_k为0，长除法初值为0x84cf
 //crc16_ccitt_nondirect(ptr, m_k+2, 0x84CF);
@@ -984,6 +1058,8 @@ CRC = 0xffff
 \item
   给长除法的CRC寄存器赋初值就相当于在信息码之前增加这个初值，然后再做初值为0的普通长除法（代码段2）
 \end{itemize}
+
+\paragraph{4.3.2 长除法与线性移位寄存器电路的关系}~{}
 
 接下来验证长除法与线性移位寄存器电路的关系。
 
@@ -1026,7 +1102,10 @@ CRC = 0x29b1
   使用初值为0x84cf的长除法计算测试信息码得到的CRC也是0x29b1
 \end{itemize}
 
-再来看初始值为0x0000时的情况：
+\paragraph{4.3.3 初值为0x0000时的情况}~{}
+
+
+再来看初值为0x0000时的情况：
 
 \begin{verbatim}
 //strcpy((char *)ptr, "123456789");
@@ -1087,6 +1166,7 @@ value can progress. \\
   对于其他初值的算法，这个盲点就比较复杂了，暂不讨论，更深的讨论应该放到CRC的检测误码性能中。
 \end{itemize}
 
+\newpage
 \hypertarget{header-n273}{%
 \subsection{5. CRC的种类}\label{header-n273}}
 
@@ -1160,25 +1240,26 @@ value can progress. \\
 
 话又说回来，再一次重复，CRC算法计算的初值选择并不影响CRC校验的有效性。所以我们选择初值的时候在发送方与接收方之间保持一致就可以了，确定好你们使用的CRC的每个特征，再给出一个测试信息计算结果，保证校验的正确性就可以了。
 
+\newpage
 \hypertarget{header-n322}{%
-\subsection{Refs}\label{header-n322}}
+\subsection{参考文献}\label{header-n322}}
 
 {[}1{]} 曹志刚, 钱亚生. 现代通信原理{[}M{]}. 清华大学出版社有限公司,
 1992.
 
 {[}2{]} CRC16-CCITT by Joe Geluso
-http://srecord.sourceforge.net/crc16-ccitt.html\#refs
+\url{http://srecord.sourceforge.net/crc16-ccitt.html#refs}
 
 {[}3{]} CRC calculation, by Sven Reifegerste
-http://www.zorc.breitbandkatze.de/crc.html
+\url{http://www.zorc.breitbandkatze.de/crc.html}
 
 {[}4{]} "A Painless Guide to CRC Error Detection Algorithms" by Ross N.
-Williams. https://www.zlib.net/crc\_v3.txt
+Williams. \url{https://www.zlib.net/crc_v3.txt}
 
 {[}5{]} Cyclic redundancy check
-https://en.wikipedia.org/wiki/Cyclic\emph{redundancy}check
+\url{https://en.wikipedia.org/wiki/Cyclic_redundancy_check}
 
 {[}6{]} CRC RevEng
-http://reveng.sourceforge.net/crc-catalogue/16.htm\#crc.cat.crc-16-kermit
+\url{http://reveng.sourceforge.net/crc-catalogue/16.htm#crc.cat.crc-16-kermit}
 
 \end{document}
