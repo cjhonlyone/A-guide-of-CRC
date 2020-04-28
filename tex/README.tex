@@ -130,25 +130,29 @@
 \hypertarget{header-n16}{%
 \paragraph{1.2.1 监督矩阵}\label{header-n16}}
 
-\begin{align}
-H &= [P_{r \times k} \space | \space I_{r \times r}]\\
-A &= [A_{1 \times k} \space | \space A_{1 \times r}]\\
+\begin{equation}
+\begin{aligned}
+H &= [P_{r \times k} \: | \: I_{r \times r}]\\
+A &= [A_{1 \times k} \: | \: A_{1 \times r}]\\
 \boldsymbol0 &= [\boldsymbol0_{1 \times n}]\\
-HA^T &= \boldsymbol0^T \\
-\end{align}
+HA^T &= \boldsymbol0^T 
+\end{aligned}
+\end{equation}
 
 这里$A_{1 \times k}$是信息码元，$A_{1 \times r}$是监督码元。
 
-$H$是监督矩阵，表面信息码元与监督码元之间的校验关系完全由$H$决定，可以写为$[P_{r \times k} \space | \space I_{r \times r}]$形式的监督矩阵称为典型监督矩阵。典型监督矩阵的各行一定是线性无关的。
+$H$是监督矩阵，表面信息码元与监督码元之间的校验关系完全由$H$决定，可以写为$[P_{r \times k} \: | \: I_{r \times r}]$形式的监督矩阵称为典型监督矩阵。典型监督矩阵的各行一定是线性无关的。
 
 \hypertarget{header-n20}{%
 \paragraph{1.2.2 生成矩阵}\label{header-n20}}
 
-\begin{align}
+\begin{equation}
+\begin{aligned}
 Q &= P_{r \times k}^T\\
-G &= [I_{k \times k} \space | \space Q]\\
-A &= A_{1 \times k}*G\\
-\end{align}
+G &= [I_{k \times k} \: | \: Q]\\
+A &= A_{1 \times k}*G
+\end{aligned}
+\end{equation}
 
 $Q$是典型监督矩阵中$P$的转置。
 
@@ -172,32 +176,36 @@ $Q$是典型监督矩阵中$P$的转置。
 
 可以用码多项式来表示一个码组：
 
-$$
+\begin{equation}
 A = (a_{n-1},a_{n-2},\cdots,a_{1},a_{0})
-$$
+\end{equation}
 
 可以表示为：
 
-$$
+\begin{equation}
 A(x) = a_{n-1}x^{n-1}+a_{n-2}x^{n-2}+\cdots+a_{1}x^{1}+a_{0}
-$$
+\end{equation}
 
 $x$是一个实变量，它的幂次代表移位的次数。上述码组左移一位记作：
 
-$$
+\begin{equation}
 A^{(1)} = (a_{n-2},a_{n-3},\cdots,a_{0},a_{n-1})
-$$
+\end{equation}
 
 它的码多项式为：
 
-$$
+\begin{equation}
 A^{(1)}(x) = a_{n-2}x^{n-1}+a_{n-3}x^{n-2}+\cdots+a_{0}x^{1}+a_{n-1}
-$$
+\end{equation}
 
 由此可知，左移$i$位的码组的码多项式为：
 
-$$x^iA(x) = Q(x)(x^n+1)+A^{(i)}(x)\\
-A^{(i)}(x) = x^iA(x) \space mod \space (x^n+1)$$
+\begin{equation}
+\begin{aligned}
+A(x)x^i &= Q(x)(x^n+1)+A^{(i)}(x)\\
+A^{(i)}(x) &= A(x)x^i \: mod \: (x^n+1)
+\end{aligned}
+\end{equation}
 
 $Q(x)$是$x^iA(x)$除以$x^n+1$的商式，$A^{(i)}(x)$是所得的余式。
 
@@ -208,29 +216,31 @@ $(n,k)$循环码的信息码组$M(x)$有$2^k$个，因此循环码许用码组$A
 
 类似于之前的生成矩阵有：
 
-$$
+\begin{equation}
 A(x)=M(x)g(x)
-$$
+\end{equation}
 
 $M(x)$为不大于$k-1$阶的多项式，$A(x)$是不大于$n-1$阶的多项式，因此$g(x)$是一个$n-k$阶的多项式。
 
-$$
+\begin{equation}
 x^kg(x)=Q(x)(x^n+1)+g^{(k)}(x)
-$$
+\end{equation}
 
 $g^{(k)}(x)$是$g(x)$左移$k$位所得，由上一个公式可知它是$g(x)$的倍式：
 
-$$
+\begin{equation}
 g^{(k)}(x)=M(x)g(x)
-$$
+\end{equation}
 
 所以有：
 
-\begin{align}
+\begin{equation}
+\begin{aligned}
 x^kg(x)&=Q(x)(x^n+1)+M(x)g(x)\\
 x^kg(x)+M(x)g(x)&=Q(x)(x^n+1)\\
 (x^k+M(x))g(x)&=F(x)g(x)=Q(x)(x^n+1)
-\end{align}
+\end{aligned}
+\end{equation}
 
 因此$g(x)$一定是$x^n+1$的因式。
 
@@ -239,7 +249,7 @@ x^kg(x)+M(x)g(x)&=Q(x)(x^n+1)\\
 
 取$G(x)$为：
 
-$$
+\begin{equation}
 G(x)=
 \left[
 \begin{matrix}
@@ -249,15 +259,17 @@ x^{k-2}g(x)\\
 g(x)\\
 \end{matrix}
 \right]
-$$
+\end{equation}
 
 当输入信息码元为$[m_{k-1},m_{k-2},\cdots,m_0]$时：
 
-\begin{align}
+\begin{equation}
+\begin{aligned}
 A(x)&=[m_{k-1},m_{k-2},\cdots,m_0]G(x)\\
     &=[m_{k-1}x^{k-1},m_{k-2}x^{k-2},\cdots,m_0]g(x)\\
     &=M(x)g(x)
-\end{align}
+\end{aligned}
+\end{equation}
 
 由此可知所有码多项式$A(x)$必为$g(x)$的倍式。
 
@@ -266,49 +278,54 @@ A(x)&=[m_{k-1},m_{k-2},\cdots,m_0]G(x)\\
 
 这样生成的循环码并不是系统码，系统码要求码的左$k$位为信息码元，随后是$n-k$位监督码元，相当于码多项式为：
 
-\begin{align}
+\begin{equation}
+\begin{aligned}
 A(x)&=M(x)x^{n-k}+R(x)\\
-    &=m_{k-1}x^{n-1}+m_{k-2}x^{n-2}+\cdots+m_0x^{n-k}+r_{n-k-1}x^{n-k-1}+\cdots+r_1x+r_0\\
-\end{align}
+    &=m_{k-1}x^{n-1}+m_{k-2}x^{n-2}+\cdots+m_0x^{n-k}+\\
+    & \hspace{1.5em} r_{n-k-1}x^{n-k-1}+\cdots+r_1x+r_0\\
+\end{aligned}
+\end{equation}
 
 其中$R(x)=r_{n-k-1}x^{n-k-1}+\cdots+r_1x+r_0$是监督吗多项式，对应监督码元$(r_{n-k-1},\cdots,r_{0})$。
 
 把$R(x)$移到等号右边，$M(x)x^{n-k}$移到等号左边，就变成了一个被除数等于商乘除数加余数的形式：
 
-\begin{align}
+\begin{equation}
+\begin{aligned}
 M(x)x^{n-k}&=A(x)+R(x)\\
     	&=M(x)g(x)+R(x)\\
-\end{align}
+\end{aligned}
+\end{equation}
 
 由此可知：
 
-$$
-R(x)=M(x)x^{n-k} \space mod \space g(x)
-$$
+\begin{equation}
+R(x)=M(x)x^{n-k} \: mod \: g(x)
+\end{equation}
 
 构造系统循环码时只需要将信息码元$M(x)$升$n-k$阶，也就是乘以$D^{n-k}$，然后以$g(x)$为模，所得余式$R(x)$即为监督码元。
 
-系统码的生成矩阵必为典型形式$G=[I_k \space Q]$，与单位矩阵$I_k$每行对应的信息多项式为：
+系统码的生成矩阵必为典型形式$G=[I_k \: Q]$，与单位矩阵$I_k$每行对应的信息多项式为：
 
-$$
-m_i(x)=m_ix^{k-i}=x^{k-i},\space i=1,2,\cdots,k
-$$
+\begin{equation}
+m_i(x)=m_ix^{k-i}=x^{k-i},\: i=1,2,\cdots,k
+\end{equation}
 
 相应的监督多项式为：
 
-$$
-r_i(x)=x^{k-i}x^{n-k}=x^{n-i}\space mod \space g(x)
-$$
+\begin{equation}
+r_i(x)=x^{k-i}x^{n-k}=x^{n-i}\: mod \: g(x)
+\end{equation}
 
 得到生成矩阵中每行的码多项式为：
 
-$$
+\begin{equation}
 C_i(x)=x^{n-i}+r_i(x)
-$$
+\end{equation}
 
 因此系统循环码的生成矩阵一般表示为：
 
-$$
+\begin{equation}
 G(x)=
 \left[
 \begin{matrix}
@@ -327,7 +344,7 @@ x^{n-1}+r_1(x)\\
 x^{n-k}+r_k(x)\\
 \end{matrix}
 \right]
-$$
+\end{equation}
 
 \hypertarget{header-n78}{%
 \subsubsection{1.4 CRC码}\label{header-n78}}
@@ -339,17 +356,19 @@ $$
 
 系统循环码的构成为：
 
-$$
+\begin{equation}
+\begin{aligned}
 \frac{M(x)x^{n-k}}{g(x)} = Q(x) + \frac{R(x)}{g(x)}\\
 A(x)=M(x)x^{n-k}+R(x)
-$$
+\end{aligned}
+\end{equation}
 
 这里信息多项式是 $M(x)$，生成多项式是
 $g(x)$，$R(x)$即为我们所需要的CRC校验码。$M(x)x^{n-k}$表示在信息码后面加上$n-k$个零。$A(x)$是系统循环码，高$k$位为信息码，低$n-k$位为监督码。
 
-$$
-R(x)=M(x)x^{n-k} \space mod \space g(x)
-$$
+\begin{equation}
+R(x)=M(x)x^{n-k} \: mod \: g(x)
+\end{equation}
 
 可以知道系统循环码较容易的实现方式是将信息码升$n-k$次幂后除以生成多项式，然后将所得余式放在升幂后的信息多项式后。
 
@@ -365,24 +384,30 @@ $$
 
 CRC有很多标准，我们随便选取一个$g(x)$示例。
 
-$$
+\begin{equation}
+\begin{aligned}
 g(x)=x^{16}+x^{12}+x^5+1\\
 (10001000000100001)
-$$
+\end{aligned}
+\end{equation}
 
 我们发送1字节的信息`A'，也就是$41H$：
 
-$$
+\begin{equation}
+\begin{aligned}
 M(x)=x^6+1\\
 (01000001)
-$$
+\end{aligned}
+\end{equation}
 
 先对$M(x)$升$n-k=16$次幂，也就是在其后补16个0：
 
-$$
+\begin{equation}
+\begin{aligned}
 M(x)x^{16}=(x^6+1)x^{16}\\
 (010000010000000000000000)
-$$
+\end{aligned}
+\end{equation}
 
 接下来就开始长除法求余数：
 
@@ -403,18 +428,22 @@ $$
 
 由上面的结果就可以得到$R(x)$
 
-$$
+\begin{equation}
+\begin{aligned}
 R(x)=x^{14}+x^{12}+x^{11}+x^{7}+x^{6}+x^{5}+x^{2}+1\\
 (0101100011100101)
-$$
+\end{aligned}
+\end{equation}
 
 把$R(x)$放在$M(x)$后面就是循环系统码$A(x)$
 
-\begin{align}
+\begin{equation}
+\begin{aligned}
 A(x)&=M(x)x^{16}+R(x)\\
 &=(x^6+1)x^{16}+x^{14}+x^{12}+x^{11}+x^{7}+x^{6}+x^{5}+x^{2}+1\\
-&(01000001 \space 0101100011100101)
-\end{align}
+&(01000001 \: 0101100011100101)
+\end{aligned}
+\end{equation}
 
 \begin{itemize}
 \item
@@ -557,69 +586,80 @@ the algorithm register to a non-zero value.
 
 CRC寄存器为$C(x)$，$C(x)=c_{15}^ix^{15}+c_{14}^ix^{14}+\cdots+c_1^ix+c_0^i$，$C_{r-1}^i$为串行输入第$i$个数据后寄存器第$r-1$位的值。
 
-$$
+\begin{equation}
+\begin{aligned}
 c_{15}^ix^{15}+c_{14}^ix^{14}+\cdots+c_1^ix+c_0^i = \\ 
-(m_{k-1}x^{k-1}+m_{k-2}x^{k-2}+\cdots+m_1x+m_0)x^{16} \space mod \space g(x)
-$$
+(m_{k-1}x^{k-1}+m_{k-2}x^{k-2}+\cdots+m_1x+m_0)x^{16} \: mod \: g(x)
+\end{aligned}
+\end{equation}
 
 如果在第$i$个数后新输入一个数据为$m$：
 
-$$
+\begin{equation}
+\begin{aligned}
 c_{15}^{i+1}x^{15}+c_{14}^{i+1}x^{14}+\cdots+c_1^{i+1}x+c_0^{i+1} \\ 
-=[(m_{k-1}x^{k-1}+m_{k-2}x^{k-2}+\cdots+m_1x+m_0)x^{17}+mx^{16}] \space mod \space g(x)\\
-=(m_{k-1}x^{k-1}+m_{k-2}x^{k-2}+\cdots+m_1x+m_0)x^{17} \space mod \space g(x)+mx^{16} \space mod \space g(x)\\
-$$
+=[(m_{k-1}x^{k-1}+m_{k-2}x^{k-2}+\cdots+m_1x+m_0)x^{17}+mx^{16}] \: mod \: g(x)\\
+=(m_{k-1}x^{k-1}+m_{k-2}x^{k-2}+\cdots+m_1x+m_0)x^{17} \: mod \: g(x)+mx^{16} \: mod \: g(x)\\
+\end{aligned}
+\end{equation}
 
 \begin{itemize}
 \item
-  讨论$mx^{16} \space mod \space g(x)$：
+  讨论$mx^{16} \: mod \: g(x)$：
 \end{itemize}
 
 如果$m=1$，余式为$g(x)+x^{16}=g_{15}x^{15}+g_{14}x^{14}+\cdots+g_1x+g_0$；
 
 如果$m=0$，余式为$0$
 
-可知$mx^{16} \space mod \space g(x) = mg_{15}x^{15}+mg_{14}x^{14}+\cdots+mg_1x+mg_0$。
+可知$mx^{16} \: mod \: g(x) = mg_{15}x^{15}+mg_{14}x^{14}+\cdots+mg_1x+mg_0$。
 
 \begin{itemize}
 \item
-  讨论$[(c_{15}^ix^{15}+c_{14}^ix^{14}+\cdots+c_1^ix+c_0^i)x] \space mod \space g(x)$：
+  讨论$[(c_{15}^ix^{15}+c_{14}^ix^{14}+\cdots+c_1^ix+c_0^i)x] \: mod \: g(x)$：
 \end{itemize}
 
 如果$c_{15}^i=1$，余式为$(c_{14}^i+g_{15})x^{15}+(c_{13}^i+g_{14})x^{14}+\cdots+(c_0^i+g_1)x+g_0$；
 
 如果$c_{15}^i=0$，余式为$c_{14}^ix^{15}+\cdots+c_1^ix^2+c_0^ix$；
 
-可知$[(c_{15}^ix^{15}+c_{14}^ix^{14}+\cdots+c_1^ix+c_0^i)x] \space mod \space g(x)=\$c_{14}^i+c_{15}^ig_{15})x^{15}+(c_{13}^i+c_{15}^ig_{14})x^{14}+\cdots+(c_0^i+c_{15}^ig_1)x+c_{15}^ig_0$
+可知$[(c_{15}^ix^{15}+c_{14}^ix^{14}+\cdots+c_1^ix+c_0^i)x] \: mod \: g(x)=\$c_{14}^i+c_{15}^ig_{15})x^{15}+(c_{13}^i+c_{15}^ig_{14})x^{14}+\cdots+(c_0^i+c_{15}^ig_1)x+c_{15}^ig_0$
 
 由以上结果可知：
 
-$$
+\begin{equation}
+\begin{aligned}
 =(c_{14}^i+c_{15}^ig_{15})x^{15}+(c_{13}^i+c_{15}^ig_{14})x^{14}+\cdots+(c_0^i+c_{15}^ig_1)x+c_{15}^ig_0\\+mg_{15}x^{15}+mg_{14}x^{14}+\cdots+mg_1x+mg_0\\
 =(c_{14}^{i}+(c_{15}^i+m)g_{15})x^{15}+(c_{13}^{i}+(c_{15}^i+m)g_{14})x^{14}+\cdots\\+(c_{0}^{i}+(c_{15}^i+m)g_{1})x+(c_{15}^i+m)g_0
-$$
+\end{aligned}
+\end{equation}
 
 所以循环移位寄存器的递推关系为：
 
-$$
+\begin{equation}
+\begin{aligned}
 c_{15}^{i+1}=c_{14}^{i}+(c_{15}^i+m)g_{15}\\
 c_{14}^{i+1}=c_{13}^{i}+(c_{15}^i+m)g_{14}\\
 \vdots\\
 c_{1}^{i+1}=c_{0}^{i}+(c_{15}^i+m)g_{1}\\
 c_{0}^{i+1}=(c_{15}^i+m)g_{0}\\
-$$
+\end{aligned}
+\end{equation}
 
 对于我们前面举的例子：
 
-$$
+\begin{equation}
+\begin{aligned}
 g(x)=x^{16}+x^{12}+x^5+1\\
 g_{12}=g_{5}=g_{0}=1\\
 g_{others}=0
-$$
+\end{aligned}
+\end{equation}
 
 循环移位寄存器的关系为：
 
-\begin{align}
+\begin{equation}
+\begin{aligned}
 c_{15}^{i+1}&=c_{14}^{i}\\
 c_{14}^{i+1}&=c_{13}^{i}\\
 c_{13}^{i+1}&=c_{12}^{i}\\
@@ -636,7 +676,8 @@ c_{ 3}^{i+1}&=c_{ 2}^{i}\\
 c_{ 2}^{i+1}&=c_{ 1}^{i}\\
 c_{ 1}^{i+1}&=c_{ 0}^{i}\\
 c_{ 0}^{i+1}&=c_{15}^i+m\\
-\end{align}
+\end{aligned}
+\end{equation}
 
 相应的RTL代码就是：
 
@@ -793,29 +834,33 @@ crc_ffff = b915
 
 基础的长除法，我们并没有寄存器初值这个概念，直接对后面补零的信息码进行长除求余式，就可以得到我们所需要的CRC。
 
-$$
-CRC(x)=M(x)x^{n-k} \space mod \space g(x)
-$$
+\begin{equation}
+CRC(x)=M(x)x^{n-k} \: mod \: g(x)
+\end{equation}
 
 但是在求余式的过程中，我们发现\textbf{对于长除法来说，信息码前面加多少零都是不影响最后所求的CRC的}。而在后面c语言实现长除法的时候由于编程需要，出现了一个CRC寄存器，信息码一个一个移入，最后得到的CRC就存在这个寄存器里，自然而然的就把它初始化为了0x0000，反正初始化为0对后面的CRC运算也没有影响。
 
 \textbf{长除法的初值实际有啥影响呢，也就是可以看作在信息码的前面又人为添加了两个字节的信息，之后才是我们想要校验的信息码和补充的0}。
 
-$$
-init \space value = xxxx\\
+\begin{equation}
+\begin{aligned}
+init \: value = xxxx\\
 相当于\\
-init \space value = 0000 \space 并且\space M_{new} = (xxxx,m_{k-1},m_{k-2},\cdots,m_0)\\
-CRC(x)=M_{new}(x)x^{n-k} \space mod \space g(x)
-$$
+init \: value = 0000 \: 并且\: M_{new} = (xxxx,m_{k-1},m_{k-2},\cdots,m_0)\\
+CRC(x)=M_{new}(x)x^{n-k} \: mod \: g(x)
+\end{aligned}
+\end{equation}
 
 再来看我们硬件循环移位寄存器实现的推导，整个推导就没有提到与初值相关的事情。
 
 我们的\textbf{假设是前k个bit已经计算出了一个CRC}。推导描述的内容是，\textbf{如果再增加一个bit，这个新的CRC跟旧的CRC是什么关系}。所以我们这个推导得到的是一个\textbf{递推关系}，有点像高中数学数列里的递推关系式，数列的确定还需要初始值的确定，也就是第一个CRC是啥。而第一个CRC就是我们CRC寄存器的初值。
 
-$$
-CRC^i(x) \space -> \space CRC^{i+1}(x)\\
-init \space value =CRC^0(x)
-$$
+\begin{equation}
+\begin{aligned}
+CRC^i(x) \: -> \: CRC^{i+1}(x)\\
+init \: value =CRC^0(x)
+\end{aligned}
+\end{equation}
 
 这个CRC寄存器的初值本质上也是一个CRC，同样是由\textbf{一串数据}通过长除法计算得到，为了统一长除法和移位寄存器法，我们就得好奇，到底啥样的数据才能算出（长除法）和这个CRC初始值相同的CRC呢？
 
@@ -824,57 +869,65 @@ $$
 
 下面是长除法计算的公式：
 
-$$
-CRC(x)=M(x)x^{n-k} \space mod \space g(x)\\
+\begin{equation}
+\begin{aligned}
+CRC(x)=M(x)x^{n-k} \: mod \: g(x)\\
 M(x)x^{n-k}=Q(x)g(x)+CRC(x)\\
-$$
+\end{aligned}
+\end{equation}
 
 现在已知生成多项式$g(x)$与$CRC(x)$，\textbf{第二个等式左边的部分低$n-k$位都是0，我们的CRC也是$n-k$位，所以利用这个关系就可以计算出相应的$M(x)$}。
 
-% $$
-% (0_{15},0_{14},\cdots,0_1,0_0)\\
-% \equiv [Q(x)g(x)] 低16位 +CRC(x)\\
-% 可以得到16个方程 \\
-%  [Q(x)g(x)] 低16位 \equiv (0_{15},0_{14},\cdots,0_1,0_0)+CRC(x)\\
-% $$
+\begin{equation}
+\begin{aligned}
+(0_{15},0_{14},\cdots,0_1,0_0)\\
+\equiv [Q(x)g(x)] lSB16bit +CRC(x)\\
+ [Q(x)g(x)] LSB16bit \equiv (0_{15},0_{14},\cdots,0_1,0_0)+CRC(x)\\
+\end{aligned}
+\end{equation}
 
 我们的CRC标准还是用之前的，
 
-$$
+\begin{equation}
+\begin{aligned}
 g(x)=x^{16}+x^{12}+x^5+1\\
 n-k=16
-$$
+\end{aligned}
+\end{equation}
 
 CRC初值选择上面有争议的0xffff。
 
 因为计算过程只与低16位相关，并且有16个方程，所以设
 
-$$
+\begin{equation}
 Q(x)=q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0
-$$
+\end{equation}
 
 计算$Q(x)g(x)$，只考虑低16位，即忽略$x^{16}以上的幂次项$:
 
-\begin{align}
+\begin{equation}
+\begin{aligned}
 Q(x)g(x)&=(q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0)(x^{16}+x^{12}+x^5+1)\\
 &=(q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0)(x^{12}+x^5+1)\\
 &=(q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0)x^{12} +\\
-& \space \space \space \space \space \space(q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0)x^5 +\\
-& \space \space \space \space \space \space(q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0)\\
+& \: \: \: \: \: \:(q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0)x^5 +\\
+& \: \: \: \: \: \:(q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0)\\
 &=q_3x^{15}+q_2x^{14}+q_1x^{13}+q_2x^{12}+\\
-& \space \space \space \space \space \space q_{10}x^{15}+q_9x^{14}+q_8x^{13}+q_7x^{12}+q_6x^{11}+q_5x^{10}+q_4x^{9}+q_3x^{8}+q_2x^{7}+q_1x^{6}+q_0x^{5}+\\
-& \space \space \space \space \space \space q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0
-\end{align}
+& \: \: \: \: \: \: q_{10}x^{15}+q_9x^{14}+q_8x^{13}+q_7x^{12}+q_6x^{11}+q_5x^{10}+q_4x^{9}+q_3x^{8}+q_2x^{7}+q_1x^{6}+q_0x^{5}+\\
+& \: \: \: \: \: \: q_{15}x^{15}+q_{14}x^{14}+\cdots+q_0
+\end{aligned}
+\end{equation}
 
 我们的条件是：
 
-$$
+\begin{equation}
 [Q(x)g(x)]低16位 \equiv (0_{15},0_{14},\cdots,0_1,0_0)+CRC(x)=0xffff
-$$
+\end{equation}
 
 则所对应的方程为：
 
-\begin{align}
+\begin{equation}
+\begin{aligned}
 (q_{3}+q_{10}+q_{15})x^{15}&=x^{15}\\
 (q_{3}+q_{ 9}+q_{14})x^{14}&=x^{14}\\
 (q_{3}+q_{ 8}+q_{13})x^{13}&=x^{13}\\
@@ -891,15 +944,16 @@ $$
 (             q_{ 2})x^{ 2}&=x^{ 2}\\
 (             q_{ 1})x^{ 1}&=x^{ 1}\\
 (             q_{ 0})x^{ 0}&=x^{ 0}\\
-\end{align}
+\end{aligned}
+\end{equation}
 
 根据这个方程我们就可以解出$(q_{15},q_{14},\cdots,q_0)$是0x8C1F。
 
 解出的这个0x8C1F是商，再带入这个公式，计算模2乘法：
 
-$$
+\begin{equation}
 M(x)x^{n-k}=Q(x)g(x)+CRC(x)
-$$
+\end{equation}
 
 就可以计算出M(x)对应的信息码是0x84CF。也就是说用长除法计算0x84CF的CRC，最后结果就是0xFFFF。
 
@@ -999,7 +1053,7 @@ CRC = 0x31c3
 
 \begin{itemize}
 \item
-  由定义推导出的CRC计算方法是零初值的长除法$CRC(x)=M(x)x^{n-k} \space mod \space g(x)$，这相当于是一个通项公式。
+  由定义推导出的CRC计算方法是零初值的长除法$CRC(x)=M(x)x^{n-k} \: mod \: g(x)$，这相当于是一个通项公式。
 \item
   线性移位寄存器的推导表示了新增一个信息码，已经计算出的CRC通过怎样的运算可以的得到新的CRC，这相当于是一个递推公式。
 \item
