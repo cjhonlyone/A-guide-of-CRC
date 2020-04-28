@@ -222,11 +222,11 @@ int main()
 	// printf("\n\n");
 
 	// m[0]=0x84;m[1]=0xCF;m_k=11;
-	crc16_ccitt_nondirect(ptr, m_k+2, 0x0000);
+	// crc16_ccitt_nondirect(ptr, m_k+2, 0x0000);
 
-	crc16_ccitt_nondirect(ptr, m_k+2, 0x84CF);
-	
-	crc16_ccitt_direct(ptr, m_k, 0x0000);
+	// crc16_ccitt_nondirect(ptr, m_k+2, 0x84CF);
+
+	crc16_ccitt_direct(ptr, m_k, 0x1d0f);
 
 	// m[0]=0x84;m[1]=0xCF;m_k=2;
 
