@@ -76,6 +76,7 @@ u16 crc16_ccitt_direct(u8 *data, u8 length, u32 init_value)
 	for (j = 0; j<length; j++, data++)
 	{
         crc_byte = *data;
+        crc_byte = reverseBits_8(crc_byte);
         // 处理每个bit
 		for (i = 0; i<8; i++)
 		{
@@ -99,9 +100,19 @@ u16 crc16_ccitt_direct(u8 *data, u8 length, u32 init_value)
 				default:
 					break;
 			}
+			printf("CRC = 0x%04x\n",crc_reg & 0x0000ffff);
 		}
 	}
-	printf("CRC = 0x%04x\n\n",crc_reg & 0x0000ffff);
+	printf("CRC = 0x%04x\n",crc_reg & 0x0000ffff);
+	u32 reverse_CRC = reverseBits_32(crc_reg & 0x0000ffff) >> 16;
+	printf("高低位反转 0x%04x\n",reverse_CRC);
+	u32 not_reverse_CRC = ~reverse_CRC & 0x0000ffff;
+	printf("取反发送 0x%04x\n",not_reverse_CRC);
+
+
+	u32 byte_CRC = (reverseBits_8(not_reverse_CRC >> 8) << 8) | reverseBits_8(not_reverse_CRC);
+	printf("收到高位存低位 0x%04x\n",byte_CRC);
+
 	return crc_reg & 0x0000ffff;
 }
 u16 crc16_ccitt_nondirect (u8 *data, u8 length, u32 init_value)
@@ -166,10 +177,9 @@ u16 crc16_ccitt_nondirect (u8 *data, u8 length, u32 init_value)
 
 int main()
 {
-	u8 m[20];
+	u8 m[40]={0x00};
 	u8 *ptr = m;
 	u8 m_k;
-
 	// printf("result: 0x%08x\n",mod2mult(0x00008c1f,0x00011021));	
 
 	// memset(ptr,0,sizeof(u8)*20);
@@ -210,10 +220,11 @@ int main()
 
 	// crc16_ccitt_nondirect(ptr, m_k+2, 0xffff);
 
-	memset(ptr,0,sizeof(u8)*20);
-	strcpy((char *)ptr, "123456789");
-	m_k = 9;
+	// memset(ptr,0,sizeof(u8)*20);
+	// strcpy((char *)ptr, "123456789");
+	m_k = 1;
 
+	// m_k = 2;
 	// printf("M(x): ");
 	// for (int i = 0; i < m_k; i++)
 	// {
@@ -226,18 +237,18 @@ int main()
 
 	// crc16_ccitt_nondirect(ptr, m_k+2, 0x84CF);
 
-	crc16_ccitt_direct(ptr, m_k, 0x1d0f);
+	// crc16_ccitt_direct(ptr, m_k, 0x1d0f);
 
 	// m[0]=0x84;m[1]=0xCF;m_k=2;
 
 
 	crc16_ccitt_direct(ptr, m_k, 0xffff);
 
-	crc16_ccitt_nondirect(ptr, m_k+2, 0xffff);
+	// crc16_ccitt_nondirect(ptr, m_k+2, 0xffff);
 
-	crc16_ccitt_direct(ptr, m_k, 0xffff);	
+	// crc16_ccitt_direct(ptr, m_k, 0xffff);	
 
-	crc16_ccitt_nondirect(ptr, m_k+2, 0x84cf);
+	// crc16_ccitt_nondirect(ptr, m_k+2, 0x84cf);
 
 
 	// crc16_ccitt_direct(ptr, m_k, 0x1d0f);

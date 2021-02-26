@@ -121,6 +121,8 @@
 \definecolor{vgreen}{RGB}{104,180,104}
 \definecolor{vblue}{RGB}{49,49,255}
 \definecolor{vorange}{RGB}{255,143,102}
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
 
 \lstdefinestyle{verilog-style}
 {
@@ -137,6 +139,26 @@
     moredelim=*[s][\colorIndex]{[}{]},
     literate=*{:}{:}1
 }
+
+\lstdefinestyle{Matlab-style}
+{
+	 language=Matlab,%
+    %basicstyle=\color{red},
+    breaklines=true,%
+    morekeywords={matlab2tikz},
+    keywordstyle=\color{blue},%
+    morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
+    identifierstyle=\color{black},%
+    stringstyle=\color{mylilas},
+    commentstyle=\color{mygreen},%
+    showstringspaces=false,%without this there will be a symbol in the places where there is a space
+    numbers=left,%
+    numberstyle={\tiny \color{black}},% size of the numbers
+    numbersep=9pt, % this defines how far the numbers are from the text
+    emph=[1]{for,end,break},emphstyle=[1]\color{red} %some words to emphasise
+    %emph=[2]{word1,word2}, emphstyle=[2]{style},    
+}
+
 \makeatletter
 \newcommand*\@lbracket{[}
 \newcommand*\@rbracket{]}
@@ -163,7 +185,7 @@
 }
 \title{\huge \textbf{CRC校验一探究竟}}
 \author{曹嘉辉}
-\date{2020.4.28}
+\date{Edit 2021.2.26}
 \begin{document}
 
 \maketitle
@@ -1167,9 +1189,167 @@ value can progress. \\
   对于其他初值的算法，这个盲点就比较复杂了，暂不讨论，更深的讨论应该放到CRC的检测误码性能中。
 \end{itemize}
 
+
+\newpage
+\hypertarget{header-n485}{%
+\subsection{5. 并行处理}\label{header-n485}}
+在CRC的实际应用中，输入给CRC算法的数据一般是以字节为单位，因此，探究CRC校验的并行处理方法也是很有必要的。
+
+\begin{equation}
+\begin{aligned}
+% c_{15}^{i+1}&=c_{14}^{i}\\
+% c_{14}^{i+1}&=c_{13}^{i}\\
+% c_{13}^{i+1}&=c_{12}^{i}\\
+c_{12}^{i+1}&=c_{11}^{i}+c_{15}^i+m\\
+% c_{11}^{i+1}&=c_{10}^{i}\\
+% c_{10}^{i+1}&=c_{ 9}^{i}\\
+% c_{ 9}^{i+1}&=c_{ 8}^{i}\\
+% c_{ 8}^{i+1}&=c_{ 7}^{i}\\
+% c_{ 7}^{i+1}&=c_{ 6}^{i}\\
+% c_{ 6}^{i+1}&=c_{ 5}^{i}\\
+c_{ 5}^{i+1}&=c_{ 4}^{i}+c_{15}^i+m\\
+% c_{ 4}^{i+1}&=c_{ 3}^{i}\\
+% c_{ 3}^{i+1}&=c_{ 2}^{i}\\
+% c_{ 2}^{i+1}&=c_{ 1}^{i}\\
+% c_{ 1}^{i+1}&=c_{ 0}^{i}\\
+c_{ 0}^{i+1}&=c_{15}^i+m\\
+c_{ k}^{i+1}&=c_{ k-1}^{i},\; k \neq 12,5,0 \\
+\end{aligned}
+\end{equation}
+
+根据上面这个递推关系可以看出当前CRC寄存器的值只与上一时刻的CRC寄存器值与输入数据m相关，根据计算关系构造一个矩阵F
+
+\begin{equation}
+\begin{aligned}
+F = 
+\left[
+\begin{matrix}
+ g_{15}      & 1      & 0      & 0      & \cdots & 0      & 0      \\
+ g_{14}      & 0      & 1      & 0      & \cdots & 0      & 0      \\
+ g_{13}      & 0      & 0      & 1      & \cdots & 0      & 0      \\
+ \vdots      & \vdots & \vdots & \vdots & \ddots & \vdots & \vdots\\
+ g_{2}      & 0      & 0      & 0      & \cdots & 1      & 0      \\
+ g_{1}      & 0      & 0      & 0      & \cdots & 0      & 1      \\
+ g_{0}      & 0      & 0      & 0      & \cdots & 0      & 0      \\
+\end{matrix}
+\right]
+\end{aligned}
+\end{equation}
+
+同时我们把CRC寄存器写为一个列向量：
+
+\begin{equation}
+\begin{aligned}
+CRC^i = [c_{15}^i,c_{14}^i,\cdots,c_1^i,c_0^i]^T
+\end{aligned}
+\end{equation}
+
+那么上面的递推关系就可以用一个矩阵乘法来表示：
+
+\begin{equation}
+\begin{aligned}
+CRC^{i+1} = F \cdot (CRC^{i} + [m,\cdots,0]^T) \: mod \: 2
+\end{aligned}
+\end{equation}
+
+如果连续输入一个字节的数据，$[m0, m1, m2, \cdots, m7]$，即：
+
+\begin{equation}
+\begin{aligned}
+CRC^{i+8} = &(F^8 \cdot CRC^{i} + \\
+&F^8 \cdot [m0,\cdots,0]^T + F^7 \cdot [m1,\cdots,0]^T + \cdots + \\
+&F^2 \cdot [m6,\cdots,0]^T + F \cdot [m7,\cdots,0]^T) \: mod \: 2
+\end{aligned}
+\end{equation}
+
+计算出这几个F的幂次矩阵，再带入初始CRC和输入的信息码，就可以得到CRC并行计算的公式。
+
+\begin{lstlisting}[style={Matlab-style}]
+% first input is x(8)
+clear
+crc = sym('crc',[16,1]);
+g = sym('g',[16,1]);
+x = sym('x',[1,8]);
+m = sym(zeros(16,8));
+m(1,:) = flip(x);
+F = sym(zeros(16,16));
+F(1:15,2:16) = eye(15);
+F(:,1) = g;
+crcnext = F^8*flip(crc)+F^8*m(:,1)+F^7*m(:,2)+F^6*m(:,3)+F^5*m(:,4)+F^4*m(:,5)+F^3*m(:,6)+F^2*m(:,7)+F*m(:,8);
+crcnext = subs(crcnext, g, [0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,1]')
+\end{lstlisting}
+
+运行这段程序：
+\begin{verbatim}
+crcnext =
+ 
+             crc8 + crc12 + crc16 + x4 + x8
+             crc7 + crc11 + crc15 + x3 + x7
+             crc6 + crc10 + crc14 + x2 + x6
+ crc5 + crc9 + crc13 + crc16 + x1 + x5 + x8
+                          crc4 + crc15 + x7
+                          crc3 + crc14 + x6
+                          crc2 + crc13 + x5
+             crc1 + crc12 + crc16 + x4 + x8
+       crc11 + crc15 + crc16 + x3 + x7 + x8
+       crc10 + crc14 + crc15 + x2 + x6 + x7
+        crc9 + crc13 + crc14 + x1 + x5 + x6
+                                 crc13 + x5
+                    crc12 + crc16 + x4 + x8
+                    crc11 + crc15 + x3 + x7
+                    crc10 + crc14 + x2 + x6
+                     crc9 + crc13 + x1 + x5
+\end{verbatim}
+
+模2加就是异或运算，这里都是位操作，因为Verilog更容易描述一个比特的位操作，所以这里我就直接使用Verilog来展示CRC每一位的计算公式。
+
+\begin{lstlisting}[style={verilog-style}]
+newcrc[16] = crc[8] ^ crc[12] ^ crc[16] ^ x[4] ^ x[8];
+newcrc[15] = crc[7] ^ crc[11] ^ crc[15] ^ x[3] ^ x[7];
+newcrc[14] = crc[6] ^ crc[10] ^ crc[14] ^ x[2] ^ x[6];
+newcrc[13] = crc[5] ^ crc[9] ^ crc[13] ^ crc[16] ^ x[1] ^ x[5] ^ x[8];
+newcrc[12] = crc[4] ^ crc[15] ^ x[7];
+newcrc[11] = crc[3] ^ crc[14] ^ x[6];
+newcrc[10] = crc[2] ^ crc[13] ^ x[5];
+newcrc[9] = crc[1] ^ crc[12] ^ crc[16] ^ x[4] ^ x[8];
+newcrc[8] = crc[11] ^ crc[15] ^ crc[16] ^ x[3] ^ x[7] ^ x[8];
+newcrc[7] = crc[10] ^ crc[14] ^ crc[15] ^ x[2] ^ x[6] ^ x[7];
+newcrc[6] = crc[9] ^ crc[13] ^ crc[14] ^ x[1] ^ x[5] ^ x[6];
+newcrc[5] = crc[13] ^ x[5];
+newcrc[4] = crc[12] ^ crc[16] ^ x[4] ^ x[8];
+newcrc[3] = crc[11] ^ crc[15] ^ x[3] ^ x[7];
+newcrc[2] = crc[10] ^ crc[14] ^ x[2] ^ x[6];
+newcrc[1] = crc[9] ^ crc[13] ^ x[1] ^ x[5];
+\end{lstlisting}
+
+这里我们定义了crc寄存器是从bit16到bit1的，因为这样从matlab生成的公式比较容易转化到verilog。
+
+
+写个testbench验证一下：
+
+\begin{verbatim}
+iverilog -s testbench -o rtl/tb_serial_crc.vvp rtl/tb_serial_crc.v rtl/serial_crc.v rtl/parallel_crc.v
+vvp -N rtl/tb_serial_crc.vvp
+VCD info: dumpfile testbench.vcd opened for output.
+m =  0, i =  0, crc_out_0000 = 0000, crc_out_ffff = ffff
+m =  1, i =  1, crc_out_0000 = 0000, crc_out_ffff = efdf
+m =  0, i =  2, crc_out_0000 = 1021, crc_out_ffff = dfbe
+m =  0, i =  3, crc_out_0000 = 2042, crc_out_ffff = af5d
+m =  0, i =  4, crc_out_0000 = 4084, crc_out_ffff = 4e9b
+m =  0, i =  5, crc_out_0000 = 8108, crc_out_ffff = 9d36
+m =  0, i =  6, crc_out_0000 = 1231, crc_out_ffff = 2a4d
+m =  1, i =  7, crc_out_0000 = 2462, crc_out_ffff = 549a
+crc_0000 = 58e5
+crc_ffff = b915
+crc_0000_p = 58e5
+crc_ffff_p = b915
+\end{verbatim}
+
+相比之前的testbench，这次多了两个并行的输出，可以看到跟我们串行计算的结果是一样的，但串行计算需要用8个时钟周期，并行计算只需要一个时钟周期就够了。
+验证了我们并行实现的结果也是正确的。
 \newpage
 \hypertarget{header-n273}{%
-\subsection{5. CRC的种类}\label{header-n273}}
+\subsection{6. CRC的种类}\label{header-n273}}
 
 根据我们上面的推导与实现的过程，可以得到确定一个CRC算法的特征：
 

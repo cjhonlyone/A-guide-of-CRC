@@ -10,7 +10,7 @@
 // WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 //
 // Purpose : synthesizable CRC function
-//   * polynomial: x^16 + x^15 + x^2 + 1
+//   * polynomial: x^16 + x^12 + x^5 + 1
 //   * data width: 8
 //
 // Info : tools@easics.be
@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 module CRC16_D8;
 
-  // polynomial: x^16 + x^15 + x^2 + 1
+  // polynomial: x^16 + x^12 + x^5 + 1
   // data width: 8
   // convention: the first serial bit is D[7]
   function [15:0] nextCRC16_D8;
@@ -32,22 +32,22 @@ module CRC16_D8;
     d = Data;
     c = crc;
 
-    newcrc[0] = d[7] ^ d[6] ^ d[5] ^ d[4] ^ d[3] ^ d[2] ^ d[1] ^ d[0] ^ c[8] ^ c[9] ^ c[10] ^ c[11] ^ c[12] ^ c[13] ^ c[14] ^ c[15];
-    newcrc[1] = d[7] ^ d[6] ^ d[5] ^ d[4] ^ d[3] ^ d[2] ^ d[1] ^ c[9] ^ c[10] ^ c[11] ^ c[12] ^ c[13] ^ c[14] ^ c[15];
-    newcrc[2] = d[1] ^ d[0] ^ c[8] ^ c[9];
-    newcrc[3] = d[2] ^ d[1] ^ c[9] ^ c[10];
-    newcrc[4] = d[3] ^ d[2] ^ c[10] ^ c[11];
-    newcrc[5] = d[4] ^ d[3] ^ c[11] ^ c[12];
-    newcrc[6] = d[5] ^ d[4] ^ c[12] ^ c[13];
-    newcrc[7] = d[6] ^ d[5] ^ c[13] ^ c[14];
-    newcrc[8] = d[7] ^ d[6] ^ c[0] ^ c[14] ^ c[15];
-    newcrc[9] = d[7] ^ c[1] ^ c[15];
-    newcrc[10] = c[2];
-    newcrc[11] = c[3];
-    newcrc[12] = c[4];
-    newcrc[13] = c[5];
-    newcrc[14] = c[6];
-    newcrc[15] = d[7] ^ d[6] ^ d[5] ^ d[4] ^ d[3] ^ d[2] ^ d[1] ^ d[0] ^ c[7] ^ c[8] ^ c[9] ^ c[10] ^ c[11] ^ c[12] ^ c[13] ^ c[14] ^ c[15];
+    newcrc[0] = d[4] ^ d[0] ^ c[8] ^ c[12];
+    newcrc[1] = d[5] ^ d[1] ^ c[9] ^ c[13];
+    newcrc[2] = d[6] ^ d[2] ^ c[10] ^ c[14];
+    newcrc[3] = d[7] ^ d[3] ^ c[11] ^ c[15];
+    newcrc[4] = d[4] ^ c[12];
+    newcrc[5] = d[5] ^ d[4] ^ d[0] ^ c[8] ^ c[12] ^ c[13];
+    newcrc[6] = d[6] ^ d[5] ^ d[1] ^ c[9] ^ c[13] ^ c[14];
+    newcrc[7] = d[7] ^ d[6] ^ d[2] ^ c[10] ^ c[14] ^ c[15];
+    newcrc[8] = d[7] ^ d[3] ^ c[0] ^ c[11] ^ c[15];
+    newcrc[9] = d[4] ^ c[1] ^ c[12];
+    newcrc[10] = d[5] ^ c[2] ^ c[13];
+    newcrc[11] = d[6] ^ c[3] ^ c[14];
+    newcrc[12] = d[7] ^ d[4] ^ d[0] ^ c[4] ^ c[8] ^ c[12] ^ c[15];
+    newcrc[13] = d[5] ^ d[1] ^ c[5] ^ c[9] ^ c[13];
+    newcrc[14] = d[6] ^ d[2] ^ c[6] ^ c[10] ^ c[14];
+    newcrc[15] = d[7] ^ d[3] ^ c[7] ^ c[11] ^ c[15];
     nextCRC16_D8 = newcrc;
   end
   endfunction

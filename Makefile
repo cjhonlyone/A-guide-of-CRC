@@ -28,7 +28,7 @@ endif
 hw_sim: rtl/tb_serial_crc.vvp
 	vvp -N $<
 
-rtl/tb_serial_crc.vvp: rtl/tb_serial_crc.v rtl/serial_crc.v
+rtl/tb_serial_crc.vvp: rtl/tb_serial_crc.v rtl/serial_crc.v rtl/parallel_crc.v
 	iverilog -s testbench -o $@ $^ 
 
 .PHONY:clean all  
